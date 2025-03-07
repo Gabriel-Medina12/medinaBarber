@@ -1,42 +1,100 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Fira+Code:wght@300..700&family=Inknut+Antiqua:wght@300;400;500;600;700;800;900&family=Jaro:opsz@6..72&family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+:root{
+  --grisClaro: #E0E1DD;
+  --grisOscuro: #D9D9D9;
+  --blanco: #fff;
+  --negro: #000;
+  --azulOscuro: #0D1B2A;
+  --azulOsucuroClaro: #1B263B;
+  --azulClaro: #778DA9;
+  --font-family:"Roboto", sans-serif;
+}
+.iconInstagram{
+  font-size: 25px;
+  margin: 0px 10px;
+  translate: 0px 5px;
+}
+.person:hover{
+  background-color: #1B263B;
+  border-radius: 100%;
+  color: #E0E1DD;
+}
+.header{
+  padding: .75rem;
+  background-color: var(--grisOscuro);
+  display: flex;
+  justify-content: space-between;
+}
+.linkInicio{
+  font-size: 25px;
+  margin-right: 20px;
+}
+.textHeader{
+  margin-left: 20px;
+  font-size: 18px;
+}
+.navBar{
+  display: flex;
+  justify-content: end;
+  align-items: center;
+}
+.navBar a{
+  margin: 1rem 1.5rem;
+  font-size: 18px;
+}
+.agendarCita{
+  background-color: var(--grisOscuro);
+  padding: .75rem 1rem ;
+  border-radius: 40px;
+}
+.agendarCita:hover{
+  box-shadow:  0px 0px 50px -2px rgba(217,217,217,1);
+  background-color: #cacaca;
+}
+.titulo-cuenta{
   text-align: center;
+  font-size: 32px;
+  margin-top: 2rem;
+  text-transform: uppercase;
 }
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.titulo-cuenta hr{
+  width:20%; 
+  margin-left:40% !important; 
+  margin-right:40% !important;
+  margin: 1rem 0rem;
+  height: 1.5px;
+  background-color: #1B263B;
+  border: none;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+.container-login-register{
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  margin: 4rem 2rem ;
+  align-items: center;
 }
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.login-container, .register-container{
+  padding: 0rem 4rem;
 }
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.login-titulo, .register-titulo{
+  text-align: center;
+  font-size: 24px;
+  text-transform: uppercase;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.login-email, .login-password{
+  display: flex;
+  flex-direction: column;
 }
-
-.card {
-  padding: 2em;
+.login-form, .register-form{
+  margin-top: 2rem;
 }
-
-.read-the-docs {
-  color: #888;
+.input{
+  width: 100%;
+  border-color: var(--azulOscuro);
+}
+.iniciarSesion{
+  text-align: center;
+  background-color: none;
+  border: none;
+  text-decoration: none;
 }
