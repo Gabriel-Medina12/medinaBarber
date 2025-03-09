@@ -3,7 +3,7 @@ const Login = () =>{
     return(
 
         <>
-            <section className="titulo-cuenta">
+            <section className="titulos">
                 <h1>Mi Cuenta</h1>
                 <hr />
             </section>
@@ -20,7 +20,7 @@ const Login = () =>{
                                 </span>
                             </div>
                             <div>
-                                <input type="text" name="" className="input"/>
+                                <input type="text" name="" className="input" required/>
                             </div>
                         </div>
                         <div className="login-password">
@@ -30,10 +30,10 @@ const Login = () =>{
                                 </span>
                             </div>
                             <div>
-                                <input type="password" name="" className="input" />
+                                <input type="password" name="" className="input" required/>
                             </div>
                         </div>
-                        <div>
+                        <div className="forgot-password">
                             <a href="/pages/auth/forgotPassword">Olvido su contraseña?</a>
                         </div>
                         <div>
@@ -42,8 +42,8 @@ const Login = () =>{
                         <div className="iniciarSesion">
                             <button type="submit" >Iniciar Sesión</button>
                         </div>
-                        <div>
-                            <p>Tu privacidad es importante para nosotros. Usaremos tus datos para que tu experiencia en el sitio sea aún mejor, para que puedes acceder a tu cuenta sin problemas y para otros fines que te explicamos en nuestra Política de privacidad</p>
+                        <div className="textPriva">
+                            <p>Tu privacidad es importante para nosotros. Usaremos tus datos para que tu experiencia en el sitio sea aún mejor, para que puedes acceder a tu cuenta sin problemas y para otros fines que te explicamos en nuestra política de privacidad.</p>
                         </div>
                     </div>
                 </div>
@@ -57,7 +57,7 @@ const Login = () =>{
                                 <span>Dirección de correo electronico *</span>
                             </div>
                             <div>
-                                <input type="email" name="" id="" className="input"/>
+                                <input type="email" name="" id="" className="input" required/>
                             </div>
                         </div>
                         <div>
@@ -65,7 +65,7 @@ const Login = () =>{
                                 <span>Nombre completo *</span>
                             </div>
                             <div>
-                                <input type="text" name="" id="" className="input"/>
+                                <input type="text" name="" id="" className="input" required/>
                             </div>
                         </div>
                         <div>
@@ -73,7 +73,7 @@ const Login = () =>{
                                 <span>Nombre de usuario *</span>
                             </div>
                             <div>
-                                <input type="text" name="" id="" className="input"/>
+                                <input type="text" name="" id="" className="input" required/>
                             </div>
                         </div>
                         <div>
@@ -81,7 +81,7 @@ const Login = () =>{
                                 <span>Contraseña *</span>
                             </div>
                             <div>
-                                <input type="password" name="" id="" className="input"/>
+                                <input type="password" name="" id="" className="input" required/>
                             </div>
                         </div>
                         <div>
@@ -89,10 +89,12 @@ const Login = () =>{
                                 <span>Confirmar contraseña *</span>
                             </div>
                             <div>
-                                <input type="password" name="" id="" className="input"/>
+                                <input type="password" name="" id="" className="input" required/>
                             </div>
                         </div>
-                        <button type="submit">Enviar</button>
+                        <div className="register-button">
+                            <button type="submit">Enviar</button>
+                        </div>
                     </div>
                 </div>
             </div>
