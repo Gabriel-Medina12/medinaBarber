@@ -1,8 +1,11 @@
+
+
+
 const Contacto = ()=>{
     return(
         <>
             <section className="titulos">
-                <h1>Contacto</h1>
+                <h2>Contacto</h2>
                 <hr />
             </section>
             <div className="contact-container">

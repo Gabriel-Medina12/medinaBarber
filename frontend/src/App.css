@@ -10,10 +10,15 @@
   --azulClaro: #778DA9;
   --font-family:"Roboto", sans-serif;
 }
+body{
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
 /* -------------------------------- HEADER ------------------------------------- */
 .iconInstagram{
-  font-size: 25px;
-  margin: 0px 10px;
+  font-size: 19px;
+  margin: 0px 8px;
   translate: 0px 5px;
 }
 .person:hover{
@@ -22,28 +27,49 @@
   color: #E0E1DD;
 }
 .header{
-  padding: .75rem;
+  padding: .25rem;
   background-color: var(--grisOscuro);
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 .linkInicio{
-  font-size: 25px;
+  font-size: 18px;
   margin-right: 20px;
 }
 .textHeader{
   margin-left: 20px;
-  font-size: 18px;
+  font-size: 15px;
 }
 /* --------------------------------- NAV BAR ---------------------------------- */
 .navBar{
   display: flex;
   justify-content: end;
   align-items: center;
+  background-color: transparent;
+  z-index: 1000;
+  position: fixed;
+  width: 100%;
 }
 .navBar a{
   margin: 1rem 1.5rem;
   font-size: 18px;
+}
+.nav{
+  position: relative;
+}
+.nav::after{
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 2px;background-color: var(--grisOscuro);
+  transform: scaleX(0);
+  transition: transform 0.5s ease;
+}
+.nav:hover::after{
+  transform: scaleX(1);
 }
 .agendarCita{
   background-color: var(--grisOscuro);
@@ -54,11 +80,14 @@
   box-shadow:  0px 0px 50px -2px rgba(217,217,217,1);
   background-color: #cacaca;
 }
+.nav{
+  color: var(--grisClaro);
+}
 /* ---------------------------- LOGIN & REGISTER ----------------------------- */
 .titulos{
   text-align: center;
   font-size: 32px;
-  margin-top: 2rem;
+  margin-top: 7rem;
   text-transform: uppercase;
 }
 .titulos hr{
@@ -134,16 +163,38 @@
   letter-spacing: 1px;
   line-height: 1.3rem;
 }
+/* .recuerdame{
+  display: flex;
+  position: relative;
+}
+label{
+  display: block;
+  position: relative;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  transition: .1s ease;
+  background-color: var(--grisOscuro);
+  border-radius: 3px;
+  cursor: pointer;
+  margin-left: 3px;
+}
+.input-style{
+  display: none;
+} */
 /* ---------------------------------- FOOTER ----------------------------------- */
 .footer{
   background-color: var(--grisOscuro);
   padding: 3rem;
-  bottom: 10rem;
+  bottom: 0;
+  width: 100%;
+
 }
 
 /* ----------------------------- FORGOT PASSWORD ------------------------------ */
 .forgot-container{
   margin: 4rem 8rem;
+  flex-grow: 1;
 }
 .forgot-submit{
   text-align: center;
@@ -182,6 +233,7 @@
   gap: 2rem;
   padding: 2rem;
   font-family: Arial, sans-serif;
+  flex-grow:unset;
 }
 
 .contact-info {
@@ -227,4 +279,30 @@
   background-color: var(--azulOscuro);
   color: var(--blanco);
   box-shadow: 0px 0px 39px -11px rgba(13,27,42,1);
+}
+/* ----------------------------------- HOME --------------------------------------- */
+.imgs-fondo-home{
+  display: flex;
+}
+.imgs-fondo-home img{
+  width: 33.33%;
+  height: 100vh;
+}
+.servicios-bg{
+  background-color: #0D1B2A;
+}
+.titulo-servicios{
+  text-align: center;
+  padding: 4rem 0rem;
+  font-size: 38px;
+  color: #D9D9D9;
+}
+.titulo-servicios hr{
+  width:20%; 
+  margin-left:40% !important; 
+  margin-right:40% !important;
+  margin: 1rem 0rem;
+  height: 1.5px;
+  background-color: #D9D9D9;
+  border: none;
 }

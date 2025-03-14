@@ -1,10 +1,14 @@
+
+
+
+
 const Login = () =>{
 
     return(
 
         <>
             <section className="titulos">
-                <h1>Mi Cuenta</h1>
+                <h2>Mi Cuenta</h2>
                 <hr />
             </section>
             <div className="container-login-register">
@@ -20,7 +24,7 @@ const Login = () =>{
                                 </span>
                             </div>
                             <div>
-                                <input type="text" name="" className="input" required/>
+                                <input type="text" name="login-email-name" className="input" required/>
                             </div>
                         </div>
                         <div className="login-password">
@@ -30,14 +34,14 @@ const Login = () =>{
                                 </span>
                             </div>
                             <div>
-                                <input type="password" name="" className="input" required/>
+                                <input type="password" name="login-password" className="input" required/>
                             </div>
                         </div>
                         <div className="forgot-password">
                             <a href="/pages/auth/forgotPassword">Olvido su contraseña?</a>
                         </div>
-                        <div>
-                            <span>Recuérdame <input type="checkbox" name="" id="" /></span>
+                        <div className="recuerdame">
+                            <p>Recuérdame</p><label id="input-style"></label><input type="checkbox" name="" id="input-style" className="input-style"/>
                         </div>
                         <div className="iniciarSesion">
                             <button type="submit" >Iniciar Sesión</button>
@@ -57,7 +61,7 @@ const Login = () =>{
                                 <span>Dirección de correo electronico *</span>
                             </div>
                             <div>
-                                <input type="email" name="" id="" className="input" required/>
+                                <input type="email" name="register-email" id="" className="input" required/>
                             </div>
                         </div>
                         <div>
@@ -65,7 +69,7 @@ const Login = () =>{
                                 <span>Nombre completo *</span>
                             </div>
                             <div>
-                                <input type="text" name="" id="" className="input" required/>
+                                <input type="text" name="register-nameFull" id="" className="input" required/>
                             </div>
                         </div>
                         <div>
@@ -73,7 +77,7 @@ const Login = () =>{
                                 <span>Nombre de usuario *</span>
                             </div>
                             <div>
-                                <input type="text" name="" id="" className="input" required/>
+                                <input type="text" name="register-name-usuario" id="" className="input" required/>
                             </div>
                         </div>
                         <div>
@@ -81,7 +85,7 @@ const Login = () =>{
                                 <span>Contraseña *</span>
                             </div>
                             <div>
-                                <input type="password" name="" id="" className="input" required/>
+                                <input type="password" name="register-password" id="" className="input" required/>
                             </div>
                         </div>
                         <div>
@@ -89,7 +93,7 @@ const Login = () =>{
                                 <span>Confirmar contraseña *</span>
                             </div>
                             <div>
-                                <input type="password" name="" id="" className="input" required/>
+                                <input type="password" name="register-confimacion-password" id="" className="input" required/>
                             </div>
                         </div>
                         <div className="register-button">

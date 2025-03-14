@@ -1,13 +1,12 @@
-import { useState } from 'react'
-import './App.css'
-import Header from './components/header'
+import Header from './components/Header.jsx'
 import NavBar from './components/NavBar'
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Login from './pages/auth/login.jsx'
-import Home from './pages/home.jsx';
-import ForgotPassword from './pages/auth/forgotPassword.jsx';
-import Footer from './components/footer.jsx';
-import Contacto from './pages/contacto.jsx';
+import Login from './pages/auth/Login.jsx'
+import Home from './pages/Home.jsx';
+import ForgotPassword from './pages/auth/ForgotPassword.jsx';
+import Footer from './components/Footer.jsx';
+import Contacto from './pages/Contacto.jsx';
+import './app.css'
 function App() {
 
   return (
@@ -17,6 +16,8 @@ function App() {
         <NavBar />
         <Routes>
           <Route path="/" element={< Home/>} />
+          <Route path='/#servicios' element={< Home />}/>
+          <Route path='/#siguenos' element={< Home />}/>
           <Route path="/pages/auth/login" element={<Login />} />
           <Route path='/pages/auth/forgotPassword' element={< ForgotPassword />}/>
           <Route path='/pages/contacto' element={< Contacto />}/>
