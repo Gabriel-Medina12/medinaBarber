@@ -72,7 +72,7 @@ body{
   transform: scaleX(1);
 }
 .agendarCita{
-  background-color: var(--grisOscuro);
+  background-color: var(--grisClaro);
   padding: .75rem 1rem ;
   border-radius: 40px;
 }
@@ -81,14 +81,15 @@ body{
   background-color: #cacaca;
 }
 .nav{
-  color: var(--grisClaro);
+  color: var(--blanco);
 }
 /* ---------------------------- LOGIN & REGISTER ----------------------------- */
 .titulos{
   text-align: center;
   font-size: 32px;
-  margin-top: 7rem;
+  margin-top: 1rem;
   text-transform: uppercase;
+  color: var(--azulOscuro);
 }
 .titulos hr{
   width:20%; 
@@ -96,7 +97,7 @@ body{
   margin-right:40% !important;
   margin: 1rem 0rem;
   height: 1.5px;
-  background-color: #1B263B;
+  background-color: var(--azulOsucuroClaro);
   border: none;
 }
 .container-login-register{
@@ -121,10 +122,11 @@ body{
 }
 .input{
   width: 100%;
-  border: 3px solid var(--azulOscuro);
+  border: 2px solid var(--azulOscuro);
   padding: .75rem;
   margin: 10px 0px;
   font-size: 16px;
+  border-radius: 8px;
 }
 .iniciarSesion, .register-button{
   text-align: center;
@@ -136,23 +138,25 @@ body{
 .iniciarSesion button, .register-button button{
   box-sizing: border-box;
   padding: 0.5rem;
-  background-color: transparent;
-  color: var(--azulOscuro);
+  background-color: var(--azulOsucuroClaro);
+  color: var(--blanco);
   border-radius: 12px;
-  border: 3px solid var(--azulOscuro);
+  border: 2px solid var(--azulOscuro);
   font-size: 16px;
   text-transform: uppercase;
   cursor: pointer;
 }
 .iniciarSesion button:hover{
-  background-color: #0D1B2A;
-  box-shadow: 0px 0px 39px -11px rgba(13,27,42,1);
-  color: #D9D9D9;
+  background-color: var(--grisOscuro);
+  box-shadow: 0px 0px 39px -11px 0px 0px 50px -2px rgba(217,217,217,1);
+  color: var(--azulOscuro);
+  font-weight: 500;
 }
 .register-button button:hover{
-  background-color: #0D1B2A;
-  box-shadow: 0px 0px 39px -11px rgba(13,27,42,1);
-  color: #D9D9D9;
+  background-color: var(--grisOscuro);
+  box-shadow:0px 0px 50px -2px rgba(217,217,217,1);
+  color: var(--azulOscuro);
+  font-weight: 500;
 }
 .forgot-password{
   margin:0.5rem 0rem;
@@ -163,25 +167,78 @@ body{
   letter-spacing: 1px;
   line-height: 1.3rem;
 }
-/* .recuerdame{
-  display: flex;
-  position: relative;
+.enlace-MiCuenta{
+  color: var(--grisOscuro);
 }
-label{
-  display: block;
-  position: relative;
-  top: 4px;
-  width: 12px;
-  height: 12px;
-  transition: .1s ease;
-  background-color: var(--grisOscuro);
-  border-radius: 3px;
+.custom-checkbox {
+  display: inline-flex;
+  align-items: center;
   cursor: pointer;
-  margin-left: 3px;
+  user-select: none;
+  font-size: 16px;
+  color: #333;
+  transition: color 0.3s;
 }
-.input-style{
+
+.custom-checkbox input[type="checkbox"] {
   display: none;
-} */
+}
+
+.custom-checkbox .checkmark {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #333;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  transition: background-color 0.3s, border-color 0.3s, transform 0.3s;
+  transform-style: preserve-3d;
+}
+
+.custom-checkbox .checkmark::before {
+  content: "\2713";
+  font-size: 16px;
+  color: transparent;
+  transition: color 0.3s, transform 0.3s;
+}
+
+.custom-checkbox input[type="checkbox"]:checked + .checkmark {
+  background-color: #333;
+  border-color: #333;
+  transform: scale(1.1) rotateZ(360deg) rotateY(360deg);
+}
+
+.custom-checkbox input[type="checkbox"]:checked + .checkmark::before {
+  color: #fff;
+}
+
+.custom-checkbox:hover {
+  color: #666;
+}
+
+.custom-checkbox:hover .checkmark {
+  border-color: #666;
+  background-color: #f0f0f0;
+  transform: scale(1.05);
+}
+
+.custom-checkbox input[type="checkbox"]:focus + .checkmark {
+  box-shadow: 0 0 3px 2px rgba(0, 0, 0, 0.2);
+  outline: none;
+}
+
+.custom-checkbox .checkmark,
+.custom-checkbox input[type="checkbox"]:checked + .checkmark {
+  transition: background-color 1.3s, border-color 1.3s, color 1.3s, transform 0.3s;
+}
+.recuerdame{
+  display: flex;
+}
+.recuerdame p{
+  margin-right: 5px;
+}
 /* ---------------------------------- FOOTER ----------------------------------- */
 .footer{
   background-color: var(--grisOscuro);
@@ -239,12 +296,15 @@ label{
 .contact-info {
   flex: 1;
   font-size: 1rem;
+  color: var(--azulOscuro);
 }
 
 .contact-info p {
   margin: 0.5rem 0;
 }
-
+.contact-info strong{
+  font-size: 20px;
+}
 .contact-form {
   flex: 2;
   display: flex;
@@ -261,14 +321,14 @@ label{
 
 .contact-form input, .contact-form textarea {
   padding: .75rem;
-  border: 3px solid var(--azulOscuro);
+  border: 2px solid var(--azulOscuro);
   font-size: 16px;
+  border-radius: 8px;
 }
-
 .contact-form button {
-  background-color: transparent;
-  color: var(--azulOscuro);
-  border: 3px solid var(--azulOscuro);
+  background-color: var(--azulOscuro);
+  color: var(--blanco);
+  border: 2px solid var(--azulOscuro);
   padding: 0.75rem;
   border-radius: 5px;
   cursor: pointer;
@@ -276,9 +336,50 @@ label{
 }
 
 .contact-form button:hover {
-  background-color: var(--azulOscuro);
-  color: var(--blanco);
-  box-shadow: 0px 0px 39px -11px rgba(13,27,42,1);
+  background-color: var(--grisOscuro);
+  color: var(--azulOscuro);
+  box-shadow:0px 0px 50px -2px rgba(217,217,217,1);
+  font-weight: 500;
+}
+.navBar-Corto{
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  background-color: transparent;
+  z-index: 1000;
+  width: 100%;
+}
+.navBar-Corto a{
+  margin: 2rem 1.5rem;
+  font-size: 18px;
+}
+.enlace-Contacto{
+  color: var(--grisOscuro);
+}
+.enlace-Home{
+  color: var(--azulOscuro);
+}
+.nav-corto{
+  position: relative;
+}
+.nav-corto::after{
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 2px;background-color: var(--azulOscuro);
+  transform: scaleX(0);
+  transition: transform 0.5s ease;
+}
+.nav-corto:hover::after{
+  transform: scaleX(1);
+}
+#Icons{
+  font-size: 25px;
+  margin: 0px 8px;
+  translate: 0px 4px;
+  color: var(--azulOsucuroClaro);
 }
 /* ----------------------------------- HOME --------------------------------------- */
 .imgs-fondo-home{
@@ -305,4 +406,7 @@ label{
   height: 1.5px;
   background-color: #D9D9D9;
   border: none;
+}
+.servicios-packs{
+  color: var(--grisOscuro);
 }

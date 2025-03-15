@@ -1,5 +1,5 @@
 import Header from './components/Header.jsx'
-import NavBar from './components/NavBar'
+import NavBar from './components/NavBar.jsx';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/auth/Login.jsx'
 import Home from './pages/Home.jsx';
@@ -13,7 +13,6 @@ function App() {
     <>
       <BrowserRouter>
         <Header />
-        <NavBar />
         <Routes>
           <Route path="/" element={< Home/>} />
           <Route path='/#servicios' element={< Home />}/>
@@ -30,3 +29,6 @@ function App() {
 }
 
 export default App
+
+// https://uiverse.io/gharsh11032000/selfish-owl-57
+// https://uiverse.io/tooltips

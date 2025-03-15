@@ -4,16 +4,31 @@
 const Contacto = ()=>{
     return(
         <>
+            <div className="navBar-Corto">
+                <a href="/" className="enlace-Home nav-corto">Inicio</a> <p className="enlace-Contacto">|</p> <a href="/pages/contacto" className="enlace-Contacto nav-corto">Contacto</a>
+            </div>
             <section className="titulos">
                 <h2>Contacto</h2>
                 <hr />
             </section>
             <div className="contact-container">
                 <div className="contact-info">
-                    <p><strong>Instagram:</strong> @medinabarber9</p>
-                    <p><strong>WhatsApp:</strong> 0426-1178859</p>
-                    <p><strong>Teléfono:</strong> 0426-1178859</p>
-                    <p><strong>Correo:</strong> medinabarber@gmail.com</p>
+                    <div>
+                        <strong><ion-icon name="logo-instagram" id='Icons'></ion-icon>Instagram:</strong> 
+                        <p>@medinabarber9</p>
+                    </div>
+                    <div>
+                        <strong><ion-icon name="logo-whatsapp" id='Icons' ></ion-icon>WhatsApp:</strong>
+                        <p> 0426-1178859</p>
+                    </div>
+                    <div>
+                        <strong><ion-icon name="call" id='Icons'></ion-icon>Teléfono:</strong> 
+                        <p>0426-1178859</p>
+                    </div>
+                    <div>
+                        <strong><ion-icon name="mail" id='Icons'></ion-icon>Correo:</strong>
+                        <p> medinabarber@gmail.com</p>
+                    </div>
                 </div>
                 <form className="contact-form">
                     <label>

@@ -1,10 +1,11 @@
-
-
+import NavBar from '../components/NavBar';
+import React from 'react';
 
 const Home = () => {
 
   return (
     <>
+      <NavBar/>
       <div className="imgs-fondo-home">
         <img src="./src/assets/img/medinaBarber2.jpeg" alt="" />
         <img src="./src/assets/img/medinaBarber1.jpeg" alt="" />
@@ -15,7 +16,7 @@ const Home = () => {
           <h2>Servicios</h2>
           <hr />
         </section>
-        <div>
+        <div className="servicios-packs">
           <div>
             <section>
               <h3>Barba</h3>

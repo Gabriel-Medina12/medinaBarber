@@ -7,6 +7,9 @@ const Login = () =>{
     return(
 
         <>
+            <div className="navBar-Corto">
+                <a href="/" className="enlace-Home nav-corto">Inicio</a> <p className="enlace-MiCuenta">|</p> <a href="/pages/auth/login" className="enlace-MiCuenta nav-corto">Mi Cuenta</a>
+            </div>
             <section className="titulos">
                 <h2>Mi Cuenta</h2>
                 <hr />
@@ -41,7 +44,12 @@ const Login = () =>{
                             <a href="/pages/auth/forgotPassword">Olvido su contraseña?</a>
                         </div>
                         <div className="recuerdame">
-                            <p>Recuérdame</p><label id="input-style"></label><input type="checkbox" name="" id="input-style" className="input-style"/>
+                            <p>Recuérdame</p>
+                                <label className="custom-checkbox">
+                                    <input name="dummy" type="checkbox" />
+                                    <span className="checkmark" />
+                                </label>
+                            
                         </div>
                         <div className="iniciarSesion">
                             <button type="submit" >Iniciar Sesión</button>
