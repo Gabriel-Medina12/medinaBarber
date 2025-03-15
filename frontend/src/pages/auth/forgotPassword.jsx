@@ -5,7 +5,7 @@ const ForgotPassword = ()=>{
 
     return(
         <>
-            <section className="titulos">
+            <section className="titulos-forgot">
                 <h2>Mi Cuenta</h2>
                 <hr />
             </section>

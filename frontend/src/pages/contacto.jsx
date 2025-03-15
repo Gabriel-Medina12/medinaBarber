@@ -14,8 +14,8 @@ const Contacto = ()=>{
             <div className="contact-container">
                 <div className="contact-info">
                     <div>
-                        <strong><ion-icon name="logo-instagram" id='Icons'></ion-icon>Instagram:</strong> 
-                        <p>@medinabarber9</p>
+                        <strong><ion-icon name="logo-instagram" id='Icons'></ion-icon>Instagram:</strong> <br />
+                        <a href="https://www.instagram.com/medinabarber9/">@medinabarber9</a>
                     </div>
                     <div>
                         <strong><ion-icon name="logo-whatsapp" id='Icons' ></ion-icon>WhatsApp:</strong>

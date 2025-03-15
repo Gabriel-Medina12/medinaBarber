@@ -281,7 +281,22 @@ body{
 .forgot-span{
   margin: 1rem 0rem 0rem 0rem;
 }
-
+.titulos-forgot{
+  text-align: center;
+  font-size: 32px;
+  margin-top: 5rem;
+  text-transform: uppercase;
+  color: var(--azulOscuro);
+}
+.titulos-forgot hr{
+  width:20%; 
+  margin-left:40% !important; 
+  margin-right:40% !important;
+  margin: 1rem 0rem;
+  height: 1.5px;
+  background-color: var(--azulOsucuroClaro);
+  border: none;
+}
 /* -------------------------------- CONTACTO -------------------------------- */
 .contact-container {
   display: flex;
