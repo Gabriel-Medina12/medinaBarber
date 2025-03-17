@@ -1,10 +1,12 @@
 import NavBar from '../components/NavBar';
+import Loader from '../components/loader';
 import React from 'react';
 
 const Home = () => {
 
   return (
     <>
+      <Loader/>
       <NavBar/>
       <div className="imgs-fondo-home">
         <img src="./src/assets/img/medinaBarber2.jpeg" alt="" />
@@ -18,7 +20,7 @@ const Home = () => {
         </section>
         <div className="servicios-packs">
           <div>
-            <section>
+            <section className="servicios-packs-titulos">
               <h3>Barba</h3>
               <hr />
             </section>
@@ -26,7 +28,7 @@ const Home = () => {
             <p>Afeitado de barba</p>
           </div>
           <div>
-            <section>
+            <section className="servicios-packs-titulos">
               <h3>Paquetes</h3>
               <hr />  
             </section>
@@ -36,7 +38,7 @@ const Home = () => {
             <p>Corte + Barba</p>
           </div>
           <div>
-            <section>
+            <section className="servicios-packs-titulos">
               <h3>Cortes Sencillos</h3>
               <hr />
             </section>

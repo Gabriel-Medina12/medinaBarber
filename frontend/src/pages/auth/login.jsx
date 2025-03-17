@@ -23,7 +23,7 @@ const Login = () =>{
                         <div className="login-email">
                             <div>
                                 <span>
-                                    Nombre de usuario o correo electronico *
+                                    Correo electronico *
                                 </span>
                             </div>
                             <div>
