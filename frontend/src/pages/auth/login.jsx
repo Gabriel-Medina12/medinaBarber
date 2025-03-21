@@ -7,8 +7,13 @@ const Login = () =>{
     return(
 
         <>
-            <div className="navBar-Corto">
-                <a href="/" className="enlace-Home nav-corto">Inicio</a> <p className="enlace-MiCuenta">|</p> <a href="/pages/auth/login" className="enlace-MiCuenta nav-corto">Mi Cuenta</a>
+            <div className="navbarCorto-subpages">
+                <div className="logo-MB logo">
+                    <a href="/"><img src="../../src/assets/img/LogoMedinaBarber.PNG" alt=""/></a>
+                </div>
+                <div className="navBar-Corto">
+                    <a href="/" className="enlace-Home nav-corto">Inicio</a> <p className="enlace-Contacto">|</p> <a href="/pages/auth/login" className="enlace-Contacto nav-corto">Mi Cuenta</a>
+                </div>
             </div>
             <section className="titulos">
                 <h2>Mi Cuenta</h2>

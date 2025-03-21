@@ -4,8 +4,13 @@
 const Contacto = ()=>{
     return(
         <>
-            <div className="navBar-Corto">
-                <a href="/" className="enlace-Home nav-corto">Inicio</a> <p className="enlace-Contacto">|</p> <a href="/pages/contacto" className="enlace-Contacto nav-corto">Contacto</a>
+            <div className="navbarCorto-subpages">
+                <div className="logo-MB logo">
+                    <a href="/"><img src="../src/assets/img/LogoMedinaBarber.PNG" alt=""/></a>
+                </div>
+                <div className="navBar-Corto">
+                    <a href="/" className="enlace-Home nav-corto">Inicio</a> <p className="enlace-Contacto">|</p> <a href="/pages/contacto" className="enlace-Contacto nav-corto">Contacto</a>
+                </div>
             </div>
             <section className="titulos">
                 <h2>Contacto</h2>
