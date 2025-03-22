@@ -195,7 +195,7 @@ function CalendarioCitas() {
     })
 
     // Aquí podrías mostrar un mensaje de éxito
-    alert("Cita agendada correctamente. Los datos se enviarían al backend.")
+    alert("Cita agendada correctamente.")
   }
 
   // Generar mini calendario para la barra lateral
