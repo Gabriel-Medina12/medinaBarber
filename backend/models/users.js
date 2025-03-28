@@ -1,7 +1,5 @@
-'use strict';
-
 const bcrypt = require('bcryptjs');
-const {Sequelize} = require('sequelize');
+const { Model } = require('sequelize'); 
 
 module.exports = (sequelize, DataTypes) => {
   class Users extends Model {
@@ -25,16 +23,21 @@ module.exports = (sequelize, DataTypes) => {
       },
       fullName: {
         type: DataTypes.STRING,
-        allowNull:false,
+        allowNull: false,
       },
       userName: {
         type: DataTypes.STRING,
-        allowNull:false,
-        unique:true,
+        allowNull: false,
+        unique: true,
       },
       password: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      role: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'user'
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -50,15 +53,15 @@ module.exports = (sequelize, DataTypes) => {
       modelName: 'Users',
       hooks: {
         beforeCreate: async (user) => {
-          if (user.password) {
-            const salt = await bcrypt.genSaltSync(10);
-            user.password = bcrypt.hashSync(user.password, salt);
+          if (user.password && user.changed('password')) {
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(user.password, salt);
           }
         },
         beforeUpdate: async (user) => {
-          if (user.password) {
-             const salt = await bcrypt.genSaltSync(10);
-             user.password = bcrypt.hashSync(user.password, salt);
+          if (user.password && user.changed('password')) {
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(user.password, salt);
           }
         }
       },

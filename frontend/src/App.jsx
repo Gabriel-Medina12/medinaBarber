@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Loader from "./components/Loader.jsx";
 import Header from "./components/Header.jsx";
-import Login from "./pages/auth/Login.jsx";
+import Auth from "./pages/auth/login.jsx";
 import Home from "./pages/home.jsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
 import Footer from "./components/Footer.jsx";
@@ -16,32 +16,30 @@ import "./app.css";
 function App() {
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Función que se ejecuta cuando la página termina de cargar
-  //   const simulatedDelay = setTimeout(() => {
-  //     console.log("Simulación de carga completada");
-  //     setIsLoading(false);
-  //   }, 2000);
+  // Estado que indica si el usuario está autenticado según la existencia de un token en localStorage
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem("token") ? true : false;
+  });
 
-  //   // Limpieza del timeout
-  //   return () => clearTimeout(simulatedDelay);
-  // }, []);
+  useEffect(() => {
     const handleLoad = () => {
       console.log("La página se ha cargado completamente.");
       setIsLoading(false);
     };
 
-    // Si el documento ya está completamente cargado, actualizamos el estado inmediatamente
     if (document.readyState === "complete") {
       setIsLoading(false);
     } else {
-      // Agregamos el listener para detectar el evento "load"
       window.addEventListener("load", handleLoad);
-
-      // Eliminamos el listener cuando el componente se desmonte
       return () => window.removeEventListener("load", handleLoad);
     }
   }, []);
+
+  // Función para cerrar sesión: elimina el token y actualiza el estado
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsAuthenticated(false);
+  };
 
   return (
     <>
@@ -49,17 +47,34 @@ function App() {
         <Loader />
       ) : (
         <BrowserRouter>
-          <Header />
+          {/* Le pasamos isAuthenticated y handleLogout al Header */}
+          <Header isAuthenticated={isAuthenticated} handleLogout={handleLogout} />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/#servicios" element={<Home />} />
             <Route path="/#siguenos" element={<Home />} />
-            <Route path="/pages/auth/login" element={<Login />} />
-            <Route path="/pages/auth/forgotPassword" element={<ForgotPassword />} />
+            {/* Ruta de autenticación para login/registro */}
+            <Route
+              path="/pages/auth/login"
+              element={<Auth setIsAuthenticated={setIsAuthenticated} />}
+            />
+            <Route
+              path="/pages/auth/forgotPassword"
+              element={<ForgotPassword />}
+            />
             <Route path="/pages/contacto" element={<Contacto />} />
-            <Route path="/pages/agendar" element={<Agendar/>}/>
-            <Route path="/pages/perfil" element={< Perfil />} />
-            <Route path="/pages/edit-perfil" element={< EditPerfil />} />
+            <Route path="/pages/agendar" element={<Agendar />} />
+            {/* Ruta protegida: Si no está autenticado lo redirige a login */}
+            <Route
+              path="/pages/perfil"
+              element={
+                isAuthenticated ? <Perfil /> : <Navigate to="/pages/auth/login" />
+              }
+            />
+            <Route
+              path="/pages/edit-perfil"
+              element={<EditPerfil />}
+            />
           </Routes>
           <Footer />
         </BrowserRouter>
@@ -69,4 +84,5 @@ function App() {
 }
 
 export default App;
+
 
