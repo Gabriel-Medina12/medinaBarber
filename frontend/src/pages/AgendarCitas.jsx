@@ -2,6 +2,7 @@ import CalendarioCitas from "../components/CalendarioCitas"
 
 
 function Agendar() {
+    document.title = 'Agendar Cita | Medina Barber'
   return (
     <div className="app">
         <div className="navbarCorto-subpages">

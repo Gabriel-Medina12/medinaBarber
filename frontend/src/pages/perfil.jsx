@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Link } from "react-router-dom"
 
 const Perfil = ( handleLogout ) => {
+  document.title = 'Perfil | Medina Barber'
   const [user, setUser] = useState({
     name: "Gabriel Medina",
     username: "@medinabarber9",

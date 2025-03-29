@@ -2,6 +2,7 @@
 
 
 const ForgotPassword = ()=>{
+    document.title = 'Recuperar Contraseña | Medina Barber'
 
     return(
         <>

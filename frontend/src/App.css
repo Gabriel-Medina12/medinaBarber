@@ -390,7 +390,6 @@ body{
   border: none;
 }
 /* -------------------------------- CONTACTO -------------------------------- */
-/* Estilos generales */
 .titulos {
   text-align: center;
   font-size: clamp(24px, 5vw, 32px);
@@ -465,9 +464,10 @@ body{
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  padding: 1.5rem 0; /* Eliminamos el padding horizontal */
+  padding: 1.5rem;
   font-family: Arial, sans-serif;
-  width: 100%; /* Ocupa todo el ancho disponible */
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 /* Información de contacto */
@@ -498,7 +498,7 @@ body{
 
 .contact-text, .contact-link {
   margin: 0.5rem 0 0 2rem;
-  color: var(--azulOscuro) !important;
+  color: var(--azulOscuro);
 }
 
 .contact-link {
@@ -517,8 +517,6 @@ body{
   flex-direction: column;
   gap: 1.2rem;
   padding: 1.5rem;
-  background-color: rgba(255, 255, 255, 0.8);
-  border-radius: 8px;
 }
 
 .form-label {
@@ -651,29 +649,34 @@ body{
   }
 }
 /* ----------------------------------- HOME --------------------------------------- */
-.imgs-fondo-home{
+
+/* Background images section */
+.imgs-fondo-home {
   display: flex;
-}
-.imgs-fondo-home img{
-  width: 33.33%;
   height: 100vh;
 }
+
+.imgs-fondo-home img {
+  width: 33.33%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Services section */
 .services-section {
   width: 100%;
   background-color: #0f1521;
-  padding: 64px 0;
+  padding: 64px 16px;
   color: white;
-  font-family: Arial, sans-serif;
 }
 
 .services-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 16px;
 }
 
 .services-title {
-  font-size: 40px;
+  font-size: 2.5rem;
   font-weight: bold;
   text-align: center;
   margin-bottom: 8px;
@@ -681,6 +684,7 @@ body{
 
 .services-divider {
   width: 220px;
+  max-width: 80%;
   height: 2px;
   background-color: white;
   margin: 0 auto 48px;
@@ -689,7 +693,7 @@ body{
 /* Bento grid layout */
 .bento-grid {
   display: grid;
-  grid-template-columns: repeat(3,1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
 
@@ -705,6 +709,7 @@ body{
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
   transform: translateY(-4px);
 }
+
 .bento-image-container {
   position: relative;
   height: 200px;
@@ -732,9 +737,11 @@ body{
 }
 
 .bento-category {
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: bold;
   letter-spacing: 1px;
+  text-align: center;
+  padding: 0 10px;
 }
 
 .bento-content {
@@ -763,32 +770,31 @@ body{
 .bento-list li:last-child {
   margin-bottom: 0;
 }
+
+/* Contact section */
 .contact-section {
   margin-top: 48px;
   display: flex;
-  flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 24px;
 }
 
-.contact-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
 
-.contact-label {
+
+.contact-label-home {
   font-weight: bold;
   font-size: 20px;
 }
 
-.contact-link {
-  color: white;
+.contact-link-home {
+  color: var(--grisClaro);
   text-decoration: none;
+  margin-left:1rem ;
 }
 
-.contact-link:hover {
+.contact-link-home:hover {
   text-decoration: underline;
 }
 
@@ -800,12 +806,40 @@ body{
   font-weight: 500;
   text-decoration: none;
   transition: background-color 0.3s ease;
+  text-align: center;
 }
 
 .appointment-button:hover {
   background-color: #e5e5e5;
 }
-.siguenos-insta ion-icon{
+
+/* Follow us section */
+.titulos {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.titulos h2 {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.titulos hr {
+  width: 150px;
+  margin: 0 auto;
+  border: none;
+  height: 2px;
+  background-color: #0f1521;
+}
+
+.instagram-seguirnos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2rem;
+}
+
+.siguenos-insta ion-icon {
   background-color: var(--azulOscuro);
   color: var(--grisClaro);
   padding: 1rem;
@@ -813,16 +847,81 @@ body{
   font-size: 35px;
   font-weight: bolder;
 }
-.instagram-seguirnos{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 2rem;
-}
-.enlace-ig{
+
+.enlace-ig {
   font-size: 20px;
-  margin-left: .75rem;
+  margin-left: 0.75rem;
 }
+
+/* Responsive styles */
+@media (max-width: 1024px) {
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .imgs-fondo-home {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .imgs-fondo-home img {
+    width: 100%;
+    height: 33vh;
+  }
+
+  .services-title {
+    font-size: 2rem;
+  }
+
+  .bento-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .contact-section {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .appointment-button {
+    width: 100%;
+    max-width: 300px;
+  }
+  .titulos h2{
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .services-section {
+    padding: 40px 16px;
+  }
+
+  .services-title {
+    font-size: 1.75rem;
+  }
+
+  .bento-category {
+    font-size: 1.25rem;
+  }
+
+  .contact-item {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .siguenos-insta ion-icon {
+    font-size: 28px;
+    padding: 0.75rem;
+  }
+
+  .enlace-ig {
+    font-size: 16px;
+  }
+}
+
 
 
 /* ------------------------------- Calendario ----------------------------- */ 

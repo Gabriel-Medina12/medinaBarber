@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Auth = ({ setIsAuthenticated }) => {
+  document.title = 'Login | Medina Barber'
   const navigate = useNavigate();
 
   // Estado para el formulario de Login
@@ -47,7 +48,7 @@ const Auth = ({ setIsAuthenticated }) => {
         setLoginMessage(data.message || 'Error al iniciar sesión');
       } else {
         setLoginMessage('Inicio de sesión exitoso');
-        console.log('Token recibido:', data.token);
+        // console.log('Token recibido:', data.token);
         localStorage.setItem('token', data.token);
         setIsAuthenticated(true);
         navigate('/pages/perfil');
