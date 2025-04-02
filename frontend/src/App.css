@@ -43,6 +43,19 @@ body{
   margin-left: 20px;
   font-size: 15px;
 }
+.logoutBtn{
+  margin-right: 20px;
+  background-color: var(--grisOscuro);
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+}
+.logoutBtn:hover{
+  background-color: var(--azulOscuro);
+  color: var(--grisOscuro);
+  padding: 0px 10px;
+  border-radius: 5px
+}
 /* --------------------------------- NAV BAR ---------------------------------- */
 .navBar {
   display: flex;
@@ -333,61 +346,148 @@ body{
   line-height: 1.75rem;
   font-weight: 400;
 }
+.verification-info{
+  margin-bottom: 1.5rem;
+}
+.code-verification{
+  margin-bottom: 1.5rem;
+}
 /* ---------------------------------- FOOTER ----------------------------------- */
-.footer{
-  background-color: var(--grisOscuro);
-  padding: 3rem;
-  bottom: 0;
-  width: 100%;
+.forgot-footer {
+  background-color: var(--azulOscuro);
+  color: var(--grisClaro);
+  padding: 1.5rem 1rem;
+  margin-top: auto;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.footer-links a {
+  color: var(--grisClaro);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
 }
 /* ----------------------------- FORGOT PASSWORD ------------------------------ */
-.forgot-container{
-  margin: 4rem 8rem;
-  flex-grow: 1;
-}
-.forgot-submit{
-  text-align: center;
-  margin-top: 1rem;
-}
-.forgot-submit button{
-  box-sizing: border-box;
-  padding: 0.5rem;
-  background-color: transparent;
-  color: var(--azulOscuro);
-  border-radius: 12px;
-  border: 3px solid var(--azulOscuro);
-  font-size: 16px;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-.forgot-submit button:hover{
-  background-color: #0D1B2A;
-  box-shadow: 0px 0px 39px -11px rgba(13,27,42,1);
-  color: #D9D9D9;
-}
-.forgot-form{
+.forgot-password-page {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+/* Contenido principal */
+.forgot-container {
+  flex: 1;
+  max-width: 728px;
+  width: 90%;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+/* Títulos */
+.titulos-forgot {
+  text-align: center;
+  margin-top: clamp(3rem, 8vw, 5rem);
+}
+
+.titulos-forgot h2 {
+  font-size: clamp(1.5rem, 5vw, 3rem);
+  text-transform: uppercase;
+  color: var(--azulOscuro);
+  margin-bottom: 0.5rem;
+}
+
+.titulos-forgot hr {
+  width: clamp(100px, 20vw, 200px);
+  height: 2px;
+  background-color: var(--azulOsucuroClaro);
+  margin: 0 auto;
+  border: none;
+}
+
+/* Texto descriptivo */
+.forgot-description {
+  font-size: clamp(0.9rem, 3vw, 1rem);
+  line-height: 1.6;
+  color: var(--azulOscuro);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* Formulario */
+.forgot-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
   flex-direction: column;
 }
-.forgot-span{
-  margin: 1rem 0rem 0rem 0rem;
-}
-.titulos-forgot{
-  text-align: center;
-  font-size: 32px;
-  margin-top: 5rem;
-  text-transform: uppercase;
+
+.forgot-label {
+  font-size: clamp(0.9rem, 3vw, 1rem);
   color: var(--azulOscuro);
+  margin-bottom: 0.5rem;
 }
-.titulos-forgot hr{
-  width:20%; 
-  margin-left:40% !important; 
-  margin-right:40% !important;
-  margin: 1rem 0rem;
-  height: 1.5px;
-  background-color: var(--azulOsucuroClaro);
-  border: none;
+
+.forgot-input {
+  padding: 0.8rem;
+  border: 1px solid var(--azulOsucuroClaro);
+  border-radius: 8px;
+  font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.forgot-input:focus {
+  outline: none;
+  border-color: var(--azulOscuro);
+  box-shadow: 0 0 0 2px rgba(13, 27, 42, 0.2);
+}
+
+/* Botón de enviar */
+.forgot-submit {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.submit-button {
+  padding: 0.8rem 2rem;
+  background-color: transparent;
+  color: var(--azulOscuro);
+  border: 3px solid var(--azulOscuro);
+  border-radius: 12px;
+  font-size: clamp(0.9rem, 3vw, 1rem);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 200px;
+}
+
+.submit-button:hover {
+  background-color: var(--azulOscuro);
+  color: var(--grisClaro);
+  box-shadow: 0px 0px 15px rgba(13, 27, 42, 0.3);
 }
 /* -------------------------------- CONTACTO -------------------------------- */
 .titulos {
@@ -1337,63 +1437,6 @@ body{
 .save-button:hover {
   background-color: var(--azulOsucuroClaro);
 }
-
-/* Responsive Adjustments */
-/* @media (max-width: 1024px) {
-  .calendario-container {
-    flex-direction: column;
-    height: auto;
-  } */
-
-  /* .calendario-sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid var(--grisClaro);
-  }
-
-  .sidebar-days {
-    display: none;
-  }
-} */
-/* 
-@media (max-width: 768px) {
-  .calendario-header {
-    flex-direction: column;
-    gap: 15px;
-    align-items: flex-start;
-  }
-
-  .calendario-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .day-cell {
-    min-height: 100px;
-  }
-}
-
-@media (max-width: 576px) {
-  .calendario-days-grid {
-    grid-template-columns: repeat(1, 1fr);
-  }
-
-  .calendario-days-header {
-    display: none;
-  }
-
-  .day-cell {
-    border-left: none;
-    border-right: none;
-  }
-
-  .day-cell::before {
-    content: attr(data-day);
-    font-weight: bold;
-    margin-bottom: 5px;
-    display: block;
-  }
-} */
 /* --------------------------------------- PERFIL -------------------------------------- */
 .profile-container {
   margin: 0 auto;
@@ -1413,11 +1456,12 @@ body{
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  margin-left: 20px;
 }
 
 .avatar-container {
-  width: 50px;
-  height: 50px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   overflow: hidden;
   margin-bottom: 5px;
@@ -1496,6 +1540,14 @@ body{
 
 .siguenos-ig{
   font-size: 18px;
+}
+.user-details h3{
+  margin-bottom: 10px;
+  font-size: 25px;
+}
+.username{
+  font-size: 18px;
+  margin-bottom: 10px;
 }
 
 /* ------------------------------------------------ EDIT-PERFIL ----------------------------------------------- */
@@ -1614,6 +1666,23 @@ body{
   box-shadow: 0px 0px 30px 4px rgba(27,38,59,0.28);
 }
 
+@media (max-width: 1024px) {
+  .calendario-container {
+    flex-direction: column;
+    height: auto;
+  } */
+
+  .calendario-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--grisClaro);
+  }
+
+  .sidebar-days {
+    display: none;
+  }
+} 
+
 @media (max-width: 768px) {
   .hamburger {
     display: flex;
@@ -1645,6 +1714,66 @@ body{
   
   .titulos hr {
     width: 50%;
+  }
+  .calendario-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .calendario-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .day-cell {
+    min-height: 100px;
+  }
+  .user-info{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-left: 0;
+  }
+  .avatar-container {
+    width: 50px;
+    height: 50px;
+  }
+  .user-details h3{
+    margin-bottom: 5px;
+    font-size: 18px;
+  }
+  .username{
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+  .textHeader, .logoutBtn{
+    font-size: 12px;
+  }
+  .logoutBtn:hover{
+    padding: 0px 7px;
+    border-radius: 5px
+  }
+}
+@media (max-width: 576px) {
+  .calendario-days-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .calendario-days-header {
+    display: none;
+  }
+
+  .day-cell {
+    border-left: none;
+    border-right: none;
+  }
+
+  .day-cell::before {
+    content: attr(data-day);
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
   }
 }
 

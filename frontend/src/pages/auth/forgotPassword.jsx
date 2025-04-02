@@ -1,29 +1,42 @@
 
 
 
-const ForgotPassword = ()=>{
-    document.title = 'Recuperar Contraseña | Medina Barber'
+import { Link } from "react-router-dom";
 
-    return(
-        <>
-            <section className="titulos-forgot">
-                <h2>Mi Cuenta</h2>
-                <hr />
-            </section>
-            <div className="forgot-container">
-                <p>¿Necesitas restablecer tu contraseña? Simplemente escribe tu nombre de usuario o correo electrónico y te guiaremos a través del proceso para que puedas crear una nueva contraseña y volver a acceder a tu cuenta.</p>
-                <div className="forgot-form">
-                    <div className="forgot-span">
-                        <span>Correo electronico *</span>
-                    </div>
-                    <input type="email" name="forgot-password" id="" className="input"/>
-                </div>
-                <div className="forgot-submit">
-                    <button type="submit">Enviar</button>
-                </div>
-            </div>
-        </>
-    )
+const ForgotPassword = () => {
+  document.title = 'Recuperar Contraseña | Medina Barber'
 
+  return (
+    <div className="forgot-password-page">
+      <section className="titulos-forgot">
+        <h2>Mi Cuenta</h2>
+        <hr />
+      </section>
+      
+      <div className="forgot-container">
+        <p className="forgot-description">
+          ¿Necesitas restablecer tu contraseña? Simplemente escribe tu nombre de usuario o correo electrónico y te guiaremos a través del proceso para que puedas crear una nueva contraseña y volver a acceder a tu cuenta.
+        </p>
+        
+        <form className="forgot-form">
+          <div className="form-group">
+            <label htmlFor="email" className="forgot-label">Correo electrónico *</label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              className="forgot-input"
+              required 
+            />
+          </div>
+          
+          <div className="forgot-submit">
+            <button type="submit" className="submit-button">Enviar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
 }
+
 export default ForgotPassword

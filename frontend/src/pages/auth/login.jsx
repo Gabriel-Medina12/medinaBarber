@@ -21,6 +21,11 @@ const Auth = ({ setIsAuthenticated }) => {
     confirmPassword: ''
   });
   const [registerMessage, setRegisterMessage] = useState('');
+  
+  // Estado para la verificación de correo
+  const [verificationStep, setVerificationStep] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verificationEmail, setVerificationEmail] = useState('');
 
   // Manejador de cambios para el Login
   const handleLoginChange = (e) => {
@@ -48,7 +53,6 @@ const Auth = ({ setIsAuthenticated }) => {
         setLoginMessage(data.message || 'Error al iniciar sesión');
       } else {
         setLoginMessage('Inicio de sesión exitoso');
-        // console.log('Token recibido:', data.token);
         localStorage.setItem('token', data.token);
         setIsAuthenticated(true);
         navigate('/pages/perfil');
@@ -85,14 +89,64 @@ const Auth = ({ setIsAuthenticated }) => {
         body: JSON.stringify(registerForm)
       });
       const data = await response.json();
+      
       if (!response.ok) {
         setRegisterMessage(data.message || 'Error al registrarse');
       } else {
-        setRegisterMessage('Registro exitoso. Ahora inicia sesión para acceder a tu perfil.');
+        if (data.requiresVerification) {
+          setVerificationStep(true);
+          setVerificationEmail(data.email);
+          setRegisterMessage('Se ha enviado un código de verificación a tu correo electrónico');
+        } else {
+          setRegisterMessage('Registro exitoso. Ahora inicia sesión para acceder a tu perfil.');
+        }
       }
     } catch (error) {
       console.error('Error en el registro:', error);
       setRegisterMessage('Error en el registro');
+    }
+  };
+
+  // Manejador para el cambio del código de verificación
+  const handleVerificationCodeChange = (e) => {
+    setVerificationCode(e.target.value);
+  };
+
+  // Envío del código de verificación
+  const handleVerificationSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:3000/api/users/verify-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: verificationEmail,
+          verificationCode: verificationCode
+        })
+      });
+      const data = await response.json();
+      
+      if (!response.ok) {
+        setRegisterMessage(data.message || 'Error al verificar el código');
+      } else {
+        setVerificationStep(false);
+        setRegisterMessage('Verificación exitosa. Tu cuenta ha sido creada. Ahora puedes iniciar sesión.');
+        
+        // Limpiar el formulario de registro
+        setRegisterForm({
+          email: '',
+          fullName: '',
+          userName: '',
+          password: '',
+          confirmPassword: ''
+        });
+        setVerificationCode('');
+      }
+    } catch (error) {
+      console.error('Error en la verificación:', error);
+      setRegisterMessage('Error en la verificación');
     }
   };
 
@@ -104,7 +158,7 @@ const Auth = ({ setIsAuthenticated }) => {
         <Link to="/pages/auth/login" className="enlace-Contacto nav-corto">Mi Cuenta</Link> 
       </div>
       <section className="titulos">
-        <h2>Mi Cuenta</h2>
+        <h2 className=''>Mi Cuenta</h2>
         <hr />
       </section>
       <div className="container-login-register">
@@ -152,70 +206,102 @@ const Auth = ({ setIsAuthenticated }) => {
         
         {/* Sección de Registro */}
         <div className="register-container">
-          <section className="register-titulo">
-            <h2>Registrarse</h2>
-          </section>
-          <form className="register-form" onSubmit={handleRegisterSubmit}>
-            <div className="form-group">
-              <label>Dirección de correo electrónico *</label>
-              <input
-                type="email"
-                name="email"
-                className="input"
-                required
-                value={registerForm.email}
-                onChange={handleRegisterChange}
-              />
-            </div>
-            <div className="form-group">
-              <label>Nombre completo *</label>
-              <input
-                type="text"
-                name="fullName"
-                className="input"
-                required
-                value={registerForm.fullName}
-                onChange={handleRegisterChange}
-              />
-            </div>
-            <div className="form-group">
-              <label>Nombre de usuario *</label>
-              <input
-                type="text"
-                name="userName"
-                className="input"
-                required
-                value={registerForm.userName}
-                onChange={handleRegisterChange}
-              />
-            </div>
-            <div className="form-group">
-              <label>Contraseña *</label>
-              <input
-                type="password"
-                name="password"
-                className="input"
-                required
-                value={registerForm.password}
-                onChange={handleRegisterChange}
-              />
-            </div>
-            <div className="form-group">
-              <label>Confirmar contraseña *</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                className="input"
-                required
-                value={registerForm.confirmPassword}
-                onChange={handleRegisterChange}
-              />
-            </div>
-            <div className="form-actions">
-              <button type="submit">Enviar</button>
-            </div>
-            {registerMessage && <p className="message">{registerMessage}</p>}
-          </form>
+          {!verificationStep ? (
+            <>
+              <section className="register-titulo">
+                <h2>Registrarse</h2>
+              </section>
+              <form className="register-form" onSubmit={handleRegisterSubmit}>
+                <div className="form-group">
+                  <label>Dirección de correo electrónico *</label>
+                  <input
+                    type="email"
+                    name="email"
+                    className="input"
+                    required
+                    value={registerForm.email}
+                    onChange={handleRegisterChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Nombre completo *</label>
+                  <input
+                    type="text"
+                    name="fullName"
+                    className="input"
+                    required
+                    value={registerForm.fullName}
+                    onChange={handleRegisterChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Nombre de usuario *</label>
+                  <input
+                    type="text"
+                    name="userName"
+                    className="input"
+                    required
+                    value={registerForm.userName}
+                    onChange={handleRegisterChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Contraseña *</label>
+                  <input
+                    type="password"
+                    name="password"
+                    className="input"
+                    required
+                    value={registerForm.password}
+                    onChange={handleRegisterChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Confirmar contraseña *</label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    className="input"
+                    required
+                    value={registerForm.confirmPassword}
+                    onChange={handleRegisterChange}
+                  />
+                </div>
+                <div className="form-actions">
+                  <button type="submit">Enviar</button>
+                </div>
+                {registerMessage && <p className="message">{registerMessage}</p>}
+              </form>
+            </>
+          ) : (
+            <>
+              <section className="register-titulo">
+                <h2>Verificación de Correo</h2>
+              </section>
+              <form className="register-form" onSubmit={handleVerificationSubmit}>
+                <div className="form-group">
+                  <label className='code-verification'>Código de verificación *</label>
+                  <p className="verification-info">
+                    Hemos enviado un código de verificación a {verificationEmail}. 
+                    Por favor, revisa tu bandeja de entrada o correos no deseados e ingresa el código a continuación.
+                  </p>
+                  <input
+                    type="text"
+                    name="verificationCode"
+                    className="input"
+                    required
+                    value={verificationCode}
+                    onChange={handleVerificationCodeChange}
+                    placeholder="Ingresa el código de 6 dígitos"
+                  />
+                </div>
+                <div className="form-actions">
+                  <button type="submit">Verificar</button>
+                </div>
+                {registerMessage && <p className="message">{registerMessage}</p>}
+              </form>
+          </>
+        )}
         </div>
       </div>
     </>
