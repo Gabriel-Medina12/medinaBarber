@@ -5,7 +5,8 @@ import Loader from "./components/Loader.jsx";
 import Header from "./components/Header.jsx";
 import Auth from "./pages/auth/login.jsx";
 import Home from "./pages/home.jsx";
-import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
+import ForgotPassword from "./pages/auth/forgotPassword.jsx";
+import ResetPassword from "./pages/auth/resetPassword.jsx";
 import Footer from "./components/Footer.jsx";
 import Contacto from "./pages/contacto.jsx";
 import Agendar from "./pages/AgendarCitas.jsx";
@@ -62,6 +63,7 @@ function App() {
               path="/pages/auth/forgotPassword"
               element={<ForgotPassword />}
             />
+            <Route path='/pages/auth/reset-password/:token' element={<ResetPassword />} />
             <Route path="/pages/contacto" element={<Contacto />} />
             <Route path="/pages/agendar" element={<Agendar />} />
             {/* Ruta protegida: Si no está autenticado lo redirige a login */}

@@ -5,6 +5,9 @@ const jwt = require('jsonwebtoken');
 const { Users } = require('../models');
 const { sendMail } = require('./sendMail');
 const upload = require('../config/multer');
+const { Op } = require('sequelize');
+const crypto = require('crypto');
+require('dotenv').config();
 
 const generateVerificationCode = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -144,7 +147,7 @@ router.post('/login', async (req, res)=>{
         // Generar un token JWT
         const token = jwt.sign(
           { id: user.id, role: user.role },
-          process.env.JWT_SECRET, // Clave secreta para firmar el token
+          process.env.JWT_SECRET, 
           { expiresIn: '1h' } // El token expira en 1 hora
         );
     
@@ -261,37 +264,106 @@ router.post('/edit-profile', verifyToken, upload.single('avatar'), async (req, r
 });
 
 
-router.post('/forgot-password', async(req, res)=>{
+// Solicitar reset de contraseña
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'El correo electrónico es requerido' });
+    }
+    
+    console.log(`Buscando usuario con email: ${email}`);
+    
+    // Buscar usuario por email
+    const user = await Users.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'No existe una cuenta con este correo electrónico' });
+    }
+    
+    console.log(`Usuario encontrado: ${user.id}`);
+    
+    // Generar token único
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    const resetTokenExpiry = new Date(Date.now() + 3600000); // Token válido por 1 hora
+    
+    console.log(`Token generado: ${resetToken}`);
+    
+    // Guardar token en la base de datos
+    await user.update({
+      resetPasswordToken: resetToken,
+      resetPasswordExpires: resetTokenExpiry
+    });
+    
+    // Crear enlace de reset
+    const resetLink = `${process.env.ORIGIN}/pages/auth/reset-password/${resetToken}`;
+    
+    console.log(`Enlace de reset: ${resetLink}`);
+    
+    // Enviar correo con el enlace
+    const mailSubject = 'Recuperación de contraseña - Medina Barber';
+    const mailText = `Hola ${user.fullName},\n\nHas solicitado restablecer tu contraseña. Por favor, haz clic en el siguiente enlace para completar el proceso:\n\n${resetLink}\n\nEste enlace es válido por 1 hora.\n\nSi no solicitaste este cambio, puedes ignorar este correo y tu contraseña seguirá siendo la misma.\n\nSaludos,\nEquipo de Medina Barber`;
+    
+    console.log('Enviando correo...');
+    
+    const mailResult = await sendMail(email, mailSubject, mailText);
+    
+    if (mailResult.success) {
+      console.log('Correo enviado exitosamente');
+      return res.status(200).json({ success: true, message: 'Se ha enviado un correo con instrucciones para restablecer tu contraseña' });
+    } else {
+      console.error('Error al enviar correo:', mailResult.message);
+      return res.status(500).json({ success: false, message: 'Error al enviar el correo de recuperación: ' + mailResult.message });
+    }
+  } catch (error) {
+    console.error('Error en forgot-password:', error);
+    return res.status(500).json({ success: false, message: 'Error en el servidor: ' + error.message });
+  }
+});
 
-    try {
-        const { email } = req.body;
+// Verificar token y cambiar contraseña
+router.post('/reset-password/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
     
-        // Buscar al usuario por su email
-        const user = await Users.findOne({ where: { email } });
-        if (!user) {
-          return res.status(400).json({ message: 'Usuario no encontrado' });
-        }
+    console.log(`Recibida solicitud de reset con token: ${token}`);
+    console.log(`Nueva contraseña recibida (longitud): ${password?.length || 0}`);
     
-        // Generar un token para restablecer la contraseña
-        const resetToken = jwt.sign(
-          { id: user.id },
-          process.env.JWT_SECRET, // Clave secreta para firmar el token
-          { expiresIn: '15m' } // El token expira en 15 minutos
-        );
-    
-        // Enviar el token por correo electrónico (esto es un ejemplo básico)
-        console.log(`Token para restablecer contraseña: ${resetToken}`);
-        // Aquí deberías integrar un servicio de correo electrónico para enviar el token al usuario.
-    
-        res.status(200).json({
-          message: 'Se ha enviado un enlace para restablecer la contraseña',
-          resetToken
-        });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error en el servidor' });
+    // Buscar usuario con el token válido
+    const user = await Users.findOne({
+      where: {
+        resetPasswordToken: token,
+        resetPasswordExpires: { [Op.gt]: new Date() } // Token no expirado
       }
-
+    });
+    
+    if (!user) {
+      console.log('Token inválido o expirado');
+      return res.status(400).json({ success: false, message: 'El enlace de recuperación es inválido o ha expirado' });
+    }
+    
+    console.log(`Usuario encontrado: ${user.id}`);
+    
+    // Actualizar contraseña y limpiar tokens
+    user.password = password; // El hook beforeUpdate se encargará de hashear la contraseña
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+    
+    console.log('Contraseña actualizada correctamente');
+    
+    // Enviar correo de confirmación
+    const mailSubject = 'Contraseña actualizada - Medina Barber';
+    const mailText = `Hola ${user.fullName},\n\nTu contraseña ha sido actualizada exitosamente.\n\nSi no realizaste este cambio, por favor contacta inmediatamente con nuestro equipo de soporte.\n\nSaludos,\nEquipo de Medina Barber`;
+    
+    await sendMail(user.email, mailSubject, mailText);
+    
+    return res.status(200).json({ success: true, message: 'Contraseña actualizada correctamente' });
+  } catch (error) {
+    console.error('Error en reset-password:', error);
+    return res.status(500).json({ success: false, message: 'Error en el servidor: ' + error.message });
+  }
 });
 
 router.post('/logout', async(req, res)=>{

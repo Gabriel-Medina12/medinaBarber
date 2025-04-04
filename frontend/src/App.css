@@ -489,6 +489,21 @@ body{
   color: var(--grisClaro);
   box-shadow: 0px 0px 15px rgba(13, 27, 42, 0.3);
 }
+
+/* -------------------------------- RESET PASSWORD ------------------------------- */
+.reset-password-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+.reset-container {
+  flex: 1;
+  max-width: 728px;
+  width: 90%;
+  margin: 5rem auto;
+  padding: 0 1rem;
+}
 /* -------------------------------- CONTACTO -------------------------------- */
 .titulos {
   text-align: center;
