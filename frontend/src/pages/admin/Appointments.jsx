@@ -1,0 +1,278 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import AdminSidebar from "../../components/AdminSidebar";
+import { Search, Calendar, Check, X, DollarSign, Filter } from "lucide-react";
+
+const AdminAppointments = () => {
+  document.title = 'Gestión de Citas | Medina Barber';
+  const navigate = useNavigate();
+  
+  const [loading, setLoading] = useState(true);
+  const [appointments, setAppointments] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("all"); // all, pending, confirmed, paid
+  
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/pages/auth/login");
+      return;
+    }
+    
+    const fetchAppointments = async () => {
+      try {
+        const response = await axios.get('/api/admin/appointments', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (response.data.success) {
+          setAppointments(response.data.appointments);
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error al cargar citas:', error);
+        
+        if (error.response && error.response.status === 403) {
+          alert("No tienes permisos de administrador para acceder a esta página");
+          navigate("/pages/perfil");
+        } else if (error.response && error.response.status === 401) {
+          localStorage.removeItem("token");
+          navigate("/pages/auth/login");
+        }
+        
+        setLoading(false);
+      }
+    };
+    
+    fetchAppointments();
+  }, [navigate]);
+  
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+  
+  const handleFilterChange = (e) => {
+    setFilter(e.target.value);
+  };
+  
+  const filteredAppointments = appointments.filter(appointment => {
+    // Filtrar por término de búsqueda
+    const matchesSearch = 
+      appointment.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.service.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Filtrar por estado
+    let matchesFilter = true;
+    if (filter === "pending") {
+      matchesFilter = !appointment.confirmed;
+    } else if (filter === "confirmed") {
+      matchesFilter = appointment.confirmed && !appointment.paid;
+    } else if (filter === "paid") {
+      matchesFilter = appointment.confirmed && appointment.paid;
+    }
+    
+    return matchesSearch && matchesFilter;
+  });
+  
+  const handleConfirmAppointment = async (appointmentId, isConfirmed) => {
+    const token = localStorage.getItem("token");
+    
+    try {
+      const response = await axios.put(
+        `/api/admin/appointments/${appointmentId}/confirm`, 
+        { confirmado: isConfirmed },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      if (response.data.success) {
+        // Actualizar la lista de citas
+        setAppointments(appointments.map(appointment => 
+          appointment.id === appointmentId 
+            ? { ...appointment, confirmed: isConfirmed } 
+            : appointment
+        ));
+        
+        alert(isConfirmed ? "Cita confirmada correctamente" : "Cita marcada como pendiente");
+      }
+    } catch (error) {
+      console.error('Error al actualizar cita:', error);
+      alert("Error al actualizar cita");
+    }
+  };
+  
+  const handleMarkAsPaid = async (appointmentId, isPaid) => {
+    const token = localStorage.getItem("token");
+    
+    try {
+      const response = await axios.put(
+        `/api/admin/appointments/${appointmentId}/confirm`, 
+        { pagado: isPaid },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      if (response.data.success) {
+        // Actualizar la lista de citas
+        setAppointments(appointments.map(appointment => 
+          appointment.id === appointmentId 
+            ? { ...appointment, paid: isPaid } 
+            : appointment
+        ));
+        
+        alert(isPaid ? "Pago registrado correctamente" : "Pago marcado como pendiente");
+      }
+    } catch (error) {
+      console.error('Error al actualizar pago:', error);
+      alert("Error al actualizar pago");
+    }
+  };
+  
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+  
+  if (loading) {
+    return (
+      <div className="admin-layout">
+        <AdminSidebar />
+        <div className="admin-content">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Cargando citas...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="admin-layout">
+      <AdminSidebar />
+      <div className="admin-content">
+        <div className="admin-header">
+          <h1>Gestión de Citas</h1>
+          <div className="admin-actions">
+            <div className="filter-container">
+              <Filter size={18} className="filter-icon" />
+              <select 
+                className="filter-select"
+                value={filter}
+                onChange={handleFilterChange}
+              >
+                <option value="all">Todas las citas</option>
+                <option value="pending">Pendientes</option>
+                <option value="confirmed">Confirmadas</option>
+                <option value="paid">Pagadas</option>
+              </select>
+            </div>
+            
+            <div className="search-container">
+              <Search size={18} className="search-icon" />
+              <input 
+                type="text" 
+                placeholder="Buscar citas..." 
+                className="search-input"
+                value={searchTerm}
+                onChange={handleSearch}
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div className="appointments-container">
+          {filteredAppointments.length > 0 ? (
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Servicio</th>
+                  <th>Fecha</th>
+                  <th>Hora</th>
+                  <th>Notas</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredAppointments.map(appointment => (
+                  <tr key={appointment.id} className={
+                    appointment.confirmed && appointment.paid 
+                      ? 'row-paid' 
+                      : appointment.confirmed 
+                        ? 'row-confirmed' 
+                        : 'row-pending'
+                  }>
+                    <td>{appointment.clientName}</td>
+                    <td>{appointment.service}</td>
+                    <td>{formatDate(appointment.date)}</td>
+                    <td>{appointment.time}</td>
+                    <td>
+                      <div className="notes-cell">
+                        {appointment.notes || <span className="no-notes">Sin notas</span>}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="status-badges">
+                        <span className={`status-badge ${appointment.confirmed ? 'confirmed' : 'pending'}`}>
+                          {appointment.confirmed ? 'Confirmada' : 'Pendiente'}
+                        </span>
+                        {appointment.confirmed && (
+                          <span className={`status-badge ${appointment.paid ? 'paid' : 'unpaid'}`}>
+                            {appointment.paid ? 'Pagada' : 'No pagada'}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="action-buttons">
+                        <button 
+                          className={`action-button ${appointment.confirmed ? 'cancel' : 'confirm'}`}
+                          onClick={() => handleConfirmAppointment(appointment.id, !appointment.confirmed)}
+                          title={appointment.confirmed ? "Marcar como pendiente" : "Confirmar cita"}
+                        >
+                          {appointment.confirmed ? <X size={16} /> : <Check size={16} />}
+                        </button>
+                        
+                        {appointment.confirmed && (
+                          <button 
+                            className={`action-button ${appointment.paid ? 'unpaid' : 'paid'}`}
+                            onClick={() => handleMarkAsPaid(appointment.id, !appointment.paid)}
+                            title={appointment.paid ? "Marcar como no pagada" : "Registrar pago"}
+                          >
+                            <DollarSign size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="no-results">
+              <Calendar size={48} />
+              <p>No se encontraron citas que coincidan con los criterios de búsqueda</p>
+              {filter !== "all" && (
+                <button 
+                  className="show-all-button"
+                  onClick={() => setFilter("all")}
+                >
+                  Mostrar todas las citas
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AdminAppointments;

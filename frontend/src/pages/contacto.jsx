@@ -1,8 +1,76 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
+
+axios.defaults.baseURL = 'http://localhost:3000';
 
 const Contacto = () => {
-    document.title = 'Contacto | Medina Barber'
+    document.title = 'Contacto | Medina Barber';
+    
+    const [formData, setFormData] = useState({
+        nombre: '',
+        correo: '',
+        asunto: '',
+        mensaje: ''
+    });
+    
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState({ text: '', type: '' });
+    
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+    
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setMessage({ text: '', type: '' });
+        
+        try {
+            const response = await axios.post('/api/contacto', formData, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.data.success) {
+                setMessage({ 
+                    text: 'Mensaje enviado correctamente. Te hemos enviado una confirmación por correo.', 
+                    type: 'success' 
+                });
+                
+                // Limpiar el formulario
+                setFormData({
+                    nombre: '',
+                    correo: '',
+                    asunto: '',
+                    mensaje: ''
+                });
+            } else {
+                setMessage({ 
+                    text: response.data.message || 'Error al enviar el mensaje. Por favor, intenta nuevamente.', 
+                    type: 'error' 
+                });
+            }
+        } catch (error) {
+            console.error('Error al enviar el formulario:', error);
+            
+            const errorMessage = error.response?.data?.message || 
+                                error.message || 
+                                'Error al enviar el mensaje. Por favor, intenta nuevamente.';
+            
+            setMessage({ 
+                text: errorMessage, 
+                type: 'error' 
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+    
     return(
         <>
             <div className="navbarCorto-subpages">
@@ -23,7 +91,7 @@ const Contacto = () => {
                 <div className="contact-info">
                     <div className="contact-item">
                         <strong><ion-icon name="logo-instagram" className='contact-icon'></ion-icon>Instagram:</strong>
-                        <Link to="https://www.instagram.com/medinabarber9/" className="contact-link">@medinabarber9</Link>
+                        <Link to="https://www.instagram.com/medinabarber9/" className="contact-link" target="_blank">@medinabarber9</Link>
                     </div>
                     <div className="contact-item">
                         <strong><ion-icon name="logo-whatsapp" className='contact-icon'></ion-icon>WhatsApp:</strong>
@@ -35,27 +103,69 @@ const Contacto = () => {
                     </div>
                     <div className="contact-item">
                         <strong><ion-icon name="mail" className='contact-icon'></ion-icon>Correo:</strong>
-                        <p className="contact-text">medinabarber@gmail.com</p>
+                        <p className="contact-text">medinabarber1@gmail.com</p>
                     </div>
                 </div>
-                <form className="contact-form">
+                
+                <form className="contact-form" onSubmit={handleSubmit}>
                     <label className="form-label">
                         Tu nombre *
-                        <input type="text" name="nombre" className="form-input" required/>
+                        <input 
+                            type="text" 
+                            name="nombre" 
+                            className="form-input" 
+                            value={formData.nombre}
+                            onChange={handleChange}
+                            required
+                        />
                     </label>
                     <label className="form-label">
                         Tu correo electrónico *
-                        <input type="email" name="correo" className="form-input" required />
+                        <input 
+                            type="email" 
+                            name="correo" 
+                            className="form-input" 
+                            value={formData.correo}
+                            onChange={handleChange}
+                            required 
+                        />
                     </label>
                     <label className="form-label">
                         Asunto *
-                        <input type="text" name="asunto" className="form-input" required />
+                        <input 
+                            type="text" 
+                            name="asunto" 
+                            className="form-input" 
+                            value={formData.asunto}
+                            onChange={handleChange}
+                            required 
+                        />
                     </label>
                     <label className="form-label">
                         Tu mensaje *
-                        <textarea name="mensaje" className="form-textarea" rows="4" required></textarea>
+                        <textarea 
+                            name="mensaje" 
+                            className="form-textarea" 
+                            rows="4" 
+                            value={formData.mensaje}
+                            onChange={handleChange}
+                            required
+                        ></textarea>
                     </label>
-                    <button type="submit" className="form-button">ENVIAR</button>
+                    <button 
+                        type="submit" 
+                        className="form-button"
+                        disabled={loading}
+                    >
+                        {loading ? 'ENVIANDO...' : 'ENVIAR'}
+                    </button>
+                    
+                    {/* Mensaje de éxito/error ahora está dentro del formulario, después del botón */}
+                    {message.text && (
+                        <div className={`form-message ${message.type}`}>
+                            {message.text}
+                        </div>
+                    )}
                 </form>
             </div>
         </>

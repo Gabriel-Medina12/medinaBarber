@@ -12,6 +12,14 @@ import Contacto from "./pages/contacto.jsx";
 import Agendar from "./pages/AgendarCitas.jsx";
 import Perfil from "./pages/perfil.jsx";
 import EditPerfil from "./pages/editPerfil.jsx";
+
+// Importar componentes de administración
+import AdminDashboard from "./pages/admin/Dashboard.jsx";
+import AdminUsers from "./pages/admin/Users.jsx";
+import AdminAppointments from "./pages/admin/Appointments.jsx";
+import AdminHaircuts from "./pages/admin/cortes.jsx";
+import AdminSettings from "./pages/admin/settings.jsx";
+
 import "./app.css";
 
 function App() {
@@ -20,6 +28,11 @@ function App() {
   // Estado que indica si el usuario está autenticado según la existencia de un token en localStorage
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem("token") ? true : false;
+  });
+  
+  // Estado para verificar si el usuario es administrador
+  const [isAdmin, setIsAdmin] = useState(() => {
+    return localStorage.getItem("userRole") === "admin";
   });
 
   useEffect(() => {
@@ -39,7 +52,22 @@ function App() {
   // Función para cerrar sesión: elimina el token y actualiza el estado
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("userRole");
     setIsAuthenticated(false);
+    setIsAdmin(false);
+  };
+  
+  // Componente para rutas protegidas de administrador
+  const AdminRoute = ({ children }) => {
+    if (!isAuthenticated) {
+      return <Navigate to="/pages/auth/login" />;
+    }
+    
+    if (!isAdmin) {
+      return <Navigate to="/pages/perfil" />;
+    }
+    
+    return children;
   };
 
   return (
@@ -48,25 +76,29 @@ function App() {
         <Loader />
       ) : (
         <BrowserRouter>
-          {/* Le pasamos isAuthenticated y handleLogout al Header */}
-          <Header isAuthenticated={isAuthenticated} handleLogout={handleLogout} />
+          {/* Le pasamos isAuthenticated, isAdmin y handleLogout al Header */}
+          <Header isAuthenticated={isAuthenticated} isAdmin={isAdmin} handleLogout={handleLogout} />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/#servicios" element={<Home />} />
             <Route path="/#siguenos" element={<Home />} />
-            {/* Ruta de autenticación para login/registro */}
+            
+            {/* Rutas de autenticación */}
             <Route
               path="/pages/auth/login"
-              element={<Auth setIsAuthenticated={setIsAuthenticated} />}
+              element={<Auth setIsAuthenticated={setIsAuthenticated} setIsAdmin={setIsAdmin} />}
             />
             <Route
               path="/pages/auth/forgotPassword"
               element={<ForgotPassword />}
             />
             <Route path='/pages/auth/reset-password/:token' element={<ResetPassword />} />
+            
+            {/* Rutas públicas */}
             <Route path="/pages/contacto" element={<Contacto />} />
             <Route path="/pages/agendar" element={<Agendar />} />
-            {/* Ruta protegida: Si no está autenticado lo redirige a login */}
+            
+            {/* Rutas protegidas para usuarios */}
             <Route
               path="/pages/perfil"
               element={
@@ -75,8 +107,55 @@ function App() {
             />
             <Route
               path="/pages/edit-perfil"
-              element={<EditPerfil />}
+              element={
+                isAuthenticated ? <EditPerfil /> : <Navigate to="/pages/auth/login" />
+              }
             />
+            
+            {/* Rutas protegidas para administradores */}
+            <Route
+              path="/admin/dashboard"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AdminRoute>
+                  <AdminUsers />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/appointments"
+              element={
+                <AdminRoute>
+                  <AdminAppointments />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/haircuts"
+              element={
+                <AdminRoute>
+                  <AdminHaircuts />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <AdminRoute>
+                  <AdminSettings />
+                </AdminRoute>
+              }
+            />
+            
+            {/* Ruta para manejar páginas no encontradas */}
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
           <Footer />
         </BrowserRouter>

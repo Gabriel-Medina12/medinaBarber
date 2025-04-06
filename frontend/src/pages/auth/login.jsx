@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const Auth = ({ setIsAuthenticated }) => {
+const Auth = ({ setIsAuthenticated, setIsAdmin }) => {
   document.title = 'Login | Medina Barber'
   const navigate = useNavigate();
 
@@ -54,8 +54,27 @@ const Auth = ({ setIsAuthenticated }) => {
       } else {
         setLoginMessage('Inicio de sesión exitoso');
         localStorage.setItem('token', data.token);
+        
+        // Verificar si el usuario es administrador
+        const isAdmin = data.user && data.user.role === 'admin';
+        
+        // Guardar el rol en localStorage para mantenerlo entre sesiones
+        localStorage.setItem('userRole', data.user.role);
+        
+        // Actualizar el estado de autenticación
         setIsAuthenticated(true);
-        navigate('/pages/perfil');
+        
+        // Actualizar el estado de administrador si la función existe
+        if (typeof setIsAdmin === 'function') {
+          setIsAdmin(isAdmin);
+        }
+        
+        // Redirigir según el rol
+        if (isAdmin) {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/pages/perfil');
+        }
       }
     } catch (error) {
       console.error('Error en el login:', error);
@@ -265,47 +284,48 @@ const Auth = ({ setIsAuthenticated }) => {
                     required
                     value={registerForm.confirmPassword}
                     onChange={handleRegisterChange}
-                  />
-                </div>
-                <div className="form-actions">
-                  <button type="submit">Enviar</button>
-                </div>
-                {registerMessage && <p className="message">{registerMessage}</p>}
-              </form>
-            </>
-          ) : (
-            <>
-              <section className="register-titulo">
-                <h2>Verificación de Correo</h2>
-              </section>
-              <form className="register-form" onSubmit={handleVerificationSubmit}>
-                <div className="form-group">
-                  <label className='code-verification'>Código de verificación *</label>
-                  <p className="verification-info">
-                    Hemos enviado un código de verificación a {verificationEmail}. 
-                    Por favor, revisa tu bandeja de entrada o correos no deseados e ingresa el código a continuación.
-                  </p>
-                  <input
-                    type="text"
-                    name="verificationCode"
-                    className="input"
-                    required
-                    value={verificationCode}
-                    onChange={handleVerificationCodeChange}
-                    placeholder="Ingresa el código de 6 dígitos"
-                  />
-                </div>
-                <div className="form-actions">
-                  <button type="submit">Verificar</button>
-                </div>
-                {registerMessage && <p className="message">{registerMessage}</p>}
-              </form>
-          </>
-        )}
-        </div>
-      </div>
-    </>
-  );
-};
-
-export default Auth;
+                          />
+                                    </div>
+                                    <div className="form-actions">
+                                      <button type="submit">Enviar</button>
+                                    </div>
+                                    {registerMessage && <p className="message">{registerMessage}</p>}
+                                  </form>
+                                </>
+                              ) : (
+                                <>
+                                  <section className="register-titulo">
+                                    <h2>Verificación de Correo</h2>
+                                  </section>
+                                  <form className="register-form" onSubmit={handleVerificationSubmit}>
+                                    <div className="form-group">
+                                      <label className='code-verification'>Código de verificación *</label>
+                                      <p className="verification-info">
+                                        Hemos enviado un código de verificación a {verificationEmail}. 
+                                        Por favor, revisa tu bandeja de entrada o correos no deseados e ingresa el código a continuación.
+                                      </p>
+                                      <input
+                                        type="text"
+                                        name="verificationCode"
+                                        className="input"
+                                        required
+                                        value={verificationCode}
+                                        onChange={handleVerificationCodeChange}
+                                        placeholder="Ingresa el código de 6 dígitos"
+                                      />
+                                    </div>
+                                    <div className="form-actions">
+                                      <button type="submit">Verificar</button>
+                                    </div>
+                                    {registerMessage && <p className="message">{registerMessage}</p>}
+                                  </form>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      );
+                    };
+                    
+                    export default Auth;
+                    

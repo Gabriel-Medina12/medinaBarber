@@ -114,7 +114,7 @@ const Home = () => {
                 (+58) 426 1178859
               </a>
             </div>
-            <a href="#" className="appointment-button">
+            <a href="/pages/agendar" className="appointment-button">
               AGENDAR CITA
             </a>
           </div>
@@ -123,7 +123,7 @@ const Home = () => {
 
       <div>
         <section id="siguenos" className="titulos">
-          <h2>Siguenos</h2>
+          <h2>Síguenos</h2>
           <hr />
         </section>
         <div className="instagram-seguirnos">
@@ -131,7 +131,7 @@ const Home = () => {
             <ion-icon name="logo-instagram" className="siguenos-icon"></ion-icon>
           </div>
           <div className="enlace-ig">
-            <a href="https://www.instagram.com/medinabarber9/">@medinabarber9</a>
+            <a href="https://www.instagram.com/medinabarber9/" target="_blank">@medinabarber9</a>
           </div>
         </div>
       </div>

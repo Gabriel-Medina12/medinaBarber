@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       email: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
+        unique: true, // Mantener este índice único
       },
       fullName: {
         type: DataTypes.STRING,
@@ -28,7 +28,8 @@ module.exports = (sequelize, DataTypes) => {
       userName: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
+        // Eliminar el índice único aquí para reducir el número de índices
+        // unique: true, 
       },
       password: {
         type: DataTypes.STRING,
@@ -43,14 +44,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
         defaultValue: null
-      },
-      createdAt: {
-        type: DataTypes.DATE,
-        allowNull: false,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        allowNull: false,
       },
       resetPasswordToken: {
         type: DataTypes.STRING,
