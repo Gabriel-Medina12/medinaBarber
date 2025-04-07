@@ -183,9 +183,11 @@ const verifyToken = (req, res, next) => {
     req.userRole = decoded.role;
     next();
   } catch (error) {
+    console.error("Error al verificar token:", error);
     return res.status(401).json({ message: 'Token inválido' });
   }
 };
+
 
 // Ruta para obtener el perfil del usuario
 router.get('/profile', verifyToken, async (req, res) => {
@@ -365,6 +367,30 @@ router.post('/reset-password/:token', async (req, res) => {
     return res.status(500).json({ success: false, message: 'Error en el servidor: ' + error.message });
   }
 });
+// Obtener cortes del usuario actual
+router.get('/my-cortes', verifyToken, async (req, res) => {
+  try {
+    console.log("Obteniendo cortes para el usuario:", req.userId);
+    
+    const { Cortes } = require('../models');
+    const cortes = await Cortes.findAll({
+      where: { userId: req.userId },
+      order: [['fecha', 'DESC']]
+    });
+    
+    console.log("Cortes encontrados:", cortes.length);
+    
+    res.status(200).json({
+      success: true,
+      cortes
+    });
+  } catch (error) {
+    console.error('Error al obtener cortes:', error);
+    res.status(500).json({ success: false, message: 'Error al obtener cortes' });
+  }
+});
+
+
 
 
 module.exports = router;
