@@ -1,5 +1,5 @@
 "use client"
-import { User, Scissors, Clock, Calendar, Mail, CreditCard, AlertCircle, Smartphone, Upload, FileText, Check } from "lucide-react"
+import { User, Scissors, Clock, Calendar, Mail, CreditCard, AlertCircle, Smartphone, Upload, FileText, Check, Receipt} from "lucide-react"
 import { useState, useRef, useEffect } from "react" // Añadir useEffect aquí
 import axios from "axios";
 
@@ -22,6 +22,52 @@ function AppointmentModal({
   const [referenceNumber, setReferenceNumber] = useState("");
   const [paymentComplete, setPaymentComplete] = useState(false);
   const fileInputRef = useRef(null);
+  const [dolarRate, setDolarRate] = useState(null);
+  const [loadingRate, setLoadingRate] = useState(false);
+
+  // Datos de pago móvil
+  const [pagoMovilData, setPagoMovilData] = useState({
+    telefono: "0412-2911866",
+    cedula: "30891515",
+    banco: "Banesco (0134)",
+    monto: "Cargando..."
+  });
+
+  // Obtener tasa del dólar paralelo
+  useEffect(() => {
+    const fetchDolarRate = async () => {
+      setLoadingRate(true);
+      try {
+        const response = await axios.get('https://ve.dolarapi.com/v1/dolares/paralelo');
+        if (response.data && response.data.promedio) {
+          const rate = response.data.promedio;
+          setDolarRate(rate);
+          
+          // Calcular el monto en bolívares (5$ * tasa)
+          const montoEnBs = (5 * rate).toFixed(2);
+          setPagoMovilData(prev => ({
+            ...prev,
+            monto: `5$ = ${montoEnBs} Bs`
+          }));
+        } else {
+          setPagoMovilData(prev => ({
+            ...prev,
+            monto: "5$ a paralelo (Error al cargar tasa)"
+          }));
+        }
+      } catch (error) {
+        console.error("Error al obtener tasa del dólar:", error);
+        setPagoMovilData(prev => ({
+          ...prev,
+          monto: "5$ a paralelo (Error al cargar tasa)"
+        }));
+      } finally {
+        setLoadingRate(false);
+      }
+    };
+
+    fetchDolarRate();
+  }, []);
 
   // Añadir esta validación de fecha pasada
   useEffect(() => {
@@ -65,14 +111,6 @@ function AppointmentModal({
     }
   }, [selectedDay, currentDate, handleCloseForm]);
 
-  // Datos de pago móvil
-  const pagoMovilData = {
-    telefono: "0412-2911866",
-    cedula: "30891515",
-    banco: "Banesco (0134)",
-    monto: "5$ a paralelo"
-  };
-
   // Obtener el nombre del mes
   const getMonthName = (date) => {
     const months = [
@@ -91,6 +129,17 @@ function AppointmentModal({
     ]
     return months[date.getMonth()]
   }
+
+  // Añade esta función auxiliar al principio del componente
+  const formatDateToYYYYMMDD = (yearParam, monthParam, dayParam) => {
+    // Convertir los parámetros a números
+    const y = parseInt(yearParam, 10);
+    const m = parseInt(monthParam, 10) + 1; // +1 porque en JS los meses son base 0
+    const d = parseInt(dayParam, 10);
+    
+    // Formatear con padding de ceros
+    return `${y}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+  };
 
   // Validar el formulario antes de pasar al siguiente paso
   const validateForm = () => {
@@ -191,12 +240,20 @@ function AppointmentModal({
     setReferenceNumber(e.target.value);
   }
 
+  const formatFrontendDate = (year, month, day) => {
+    const months = [
+      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+    return `${day} de ${months[month]} de ${year}`;
+  };
+
   // Manejar el envío del comprobante de pago
   const handlePaymentProofSubmit = async (e) => {
     e.preventDefault();
     
     if (!validatePaymentProof()) return;
-  
+
     setLoading(true);
     
     try {
@@ -206,11 +263,17 @@ function AppointmentModal({
       formData.append("clientName", appointmentData.clientName);
       formData.append("email", appointmentData.email);
       formData.append("service", appointmentData.service);
-      formData.append("date", new Date(
+      
+      // Usar la función auxiliar para crear la fecha correctamente
+      const formattedDate = formatDateToYYYYMMDD(
         currentDate.getFullYear(),
         currentDate.getMonth(),
         selectedDay
-      ).toISOString().split("T")[0]);
+      );
+      formData.append("date", formattedDate);
+      
+      console.log('Enviando fecha en comprobante:', formattedDate); // Log para depuración
+      
       formData.append("time", appointmentData.time);
       
       // Campos condicionales
@@ -221,17 +284,17 @@ function AppointmentModal({
       if (appointmentData.notes) {
         formData.append("notes", appointmentData.notes);
       }
-  
+
       const token = localStorage.getItem("token");
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-  
+
       const response = await axios.post("/api/agendar", formData, {
         headers: {
           ...headers,
           "Content-Type": "multipart/form-data",
         },
       });
-  
+
       if (response.data.success) {
         setPaymentComplete(true);
       }
@@ -254,6 +317,14 @@ function AppointmentModal({
       return;
     }
     setLoading(true);
+
+    // Usar la función auxiliar para crear la fecha correctamente
+    const formattedDate = formatDateToYYYYMMDD(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      selectedDay
+    );
+    
     // Crear objeto con todos los datos finales
     const finalData = {
       clientName: appointmentData.clientName,
@@ -261,11 +332,7 @@ function AppointmentModal({
       service: appointmentData.service,
       time: appointmentData.time,
       notes: appointmentData.notes || '',
-      date: new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        selectedDay
-      ).toISOString().split('T')[0],
+      date: formattedDate,
       paymentMethod: paymentMethod
     };
     
@@ -275,7 +342,7 @@ function AppointmentModal({
       finalData.paymentProof = paymentProof;
     }
     
-    // console.log('Datos finales a enviar:', finalData); // Para depuración
+    console.log('Enviando fecha:', formattedDate); // Log para depuración
     
     // Llamar a la función de envío del componente padre
     handleSubmit(e, finalData);
@@ -314,7 +381,11 @@ function AppointmentModal({
                 <strong>Servicio:</strong> {appointmentData.service}
               </div>
               <div className="receipt-item">
-                <strong>Fecha:</strong> {selectedDay} de {getMonthName(currentDate)}, {currentDate.getFullYear()}
+                <strong>Fecha:</strong> {formatFrontendDate(
+                  currentDate.getFullYear(),
+                  currentDate.getMonth(),
+                  selectedDay
+                )}
               </div>
               <div className="receipt-item">
                 <strong>Hora:</strong> {appointmentData.time}
@@ -424,9 +495,14 @@ function AppointmentModal({
     <div className="appointment-modal-overlay">
       <div className="appointment-modal">
         <div className="modal-header">
-          <h3>
-            {step === 1 ? "Nueva Cita" : step === 2 ? "Confirmar Cita" : "Comprobante de Pago"} - {selectedDay} de {getMonthName(currentDate)}, {currentDate.getFullYear()}
-          </h3>
+        <h3>
+          {step === 1 ? "Nueva Cita" : step === 2 ? "Confirmar Cita" : "Comprobante de Pago"} - 
+          {formatFrontendDate(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            selectedDay
+          )}
+        </h3>
           <button className="close-button" onClick={handleCloseForm}>
             ×
           </button>
@@ -577,7 +653,11 @@ function AppointmentModal({
               <div className="summary-item">
                 <Calendar size={16} />
                 <div>
-                  <strong>Fecha:</strong> {selectedDay} de {getMonthName(currentDate)}, {currentDate.getFullYear()}
+                <strong>Fecha:</strong> {formatFrontendDate(
+                  currentDate.getFullYear(),
+                  currentDate.getMonth(),
+                  selectedDay
+                )}
                 </div>
               </div>
               
@@ -647,8 +727,12 @@ function AppointmentModal({
                       <div>
                         <strong>Banco:</strong> {pagoMovilData.banco}
                       </div>
+                    </div>
+                    <div className="pago-movil-item">
+                      <Receipt size={16} />
                       <div>
-                        <strong>Monto:</strong> {pagoMovilData.monto}
+
+                        <strong>Monto a pagar:</strong> {loadingRate ? "Calculando..." : pagoMovilData.monto}
                       </div>
                     </div>
                     <p className="payment-note">

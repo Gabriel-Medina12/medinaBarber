@@ -32,13 +32,28 @@ const db = require('./models');
 db.sequelize.authenticate()
 .then(() => {
     console.log('Conexión a la base de datos establecida');
-    return db.sequelize.sync({ alter: true }); // 👈 ¡Agrega esto!
+    // return db.sequelize.sync({ alter: true }); // 👈 ¡Agrega esto!
 })
 .then(() => {
     console.log('Modelos sincronizados');
 })
 .catch(err => {
     console.error('Error al conectar con la base de datos:', err);
+});
+
+const cron = require('node-cron');
+
+cron.schedule('0 0 * * 1', async () => { // Cada lunes a media noche
+  const twoWeeksAgo = new Date();
+  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+  
+  await db.Citas.destroy({
+    where: {
+      date: {
+        [Op.lt]: twoWeeksAgo
+      }
+    }
+  });
 });
 
 

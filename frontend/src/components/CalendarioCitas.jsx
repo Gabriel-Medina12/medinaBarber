@@ -20,6 +20,7 @@ function CalendarioCitas() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState({ text: '', type: '' })
   const [userData, setUserData] = useState(null)
+  const [allAppointments, setAllAppointments] = useState([]);
 
   // Servicios disponibles
   const [services, setServices] = useState([])
@@ -29,6 +30,66 @@ function CalendarioCitas() {
   const [timeSlots, setTimeSlots] = useState([
     "10:00", "10:30", "11:00", "11:30","12:00", "12:30", "13:00", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00",
   ])
+  const getAvailableTimeSlots = (day) => {
+    const bookedTimes = currentWeekAppointments
+      .filter(appointment => {
+        const appointmentDate = new Date(appointment.date);
+        return (
+          appointmentDate.getDate() === day.day &&
+          appointmentDate.getMonth() === currentDate.getMonth() &&
+          appointmentDate.getFullYear() === currentDate.getFullYear()
+        );
+      })
+      .map(appointment => appointment.time);
+  
+    return timeSlots.map(time => ({
+      time,
+      available: !bookedTimes.includes(time)
+    }));
+  };
+
+  useEffect(() => {
+    const loadWeeklyAppointments = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get('/api/agendar/all', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        
+        if (response.data.success) {
+          setAllAppointments(response.data.appointments);
+        }
+      } catch (error) {
+        console.error('Error cargando citas:', error);
+      }
+    };
+    
+    loadWeeklyAppointments();
+    
+    // Programar recarga semanal
+    const weeklyRefresh = setInterval(loadWeeklyAppointments, 604800000); // 1 semana
+    
+    return () => clearInterval(weeklyRefresh);
+  }, []);
+
+  const getCurrentWeekAppointments = () => {
+    const startOfWeek = new Date();
+    startOfWeek.setHours(0, 0, 0, 0);
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1); // Lunes
+    
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 6); // Domingo
+    
+    return allAppointments.filter(appointment => {
+      const appDate = new Date(appointment.date);
+      return appDate >= startOfWeek && appDate <= endOfWeek;
+    });
+  };
+
+  // En el JSX, cambiar las referencias de userAppointments por:
+  const currentWeekAppointments = getCurrentWeekAppointments();
 
   // Cargar citas del usuario si está logueado
   useEffect(() => {
@@ -416,7 +477,7 @@ function CalendarioCitas() {
                 <>
                   <div className="day-number">{day.day}</div>
                   <div className="day-appointments">
-                    {userAppointments
+                    {currentWeekAppointments
                       .filter(appointment => {
                         const appointmentDate = new Date(appointment.date);
                         return (
@@ -429,9 +490,10 @@ function CalendarioCitas() {
                         <div 
                           key={appointment.id} 
                           className={`appointment-marker ${appointment.confirmed ? 'confirmed' : 'pending'}`}
-                          title={`${appointment.service} - ${appointment.time}`}
+                          title={`${appointment.clientName} - ${appointment.service} (${appointment.time})`}
                         >
-                          {appointment.time}
+                          <span className="client-initial">{appointment.clientName.charAt(0)}</span>
+                          <span className="appointment-time">{appointment.time}</span>
                         </div>
                       ))}
                   </div>
@@ -483,27 +545,27 @@ function CalendarioCitas() {
         </div>
 
         <div className="sidebar-appointments">
-          <h3>Mis citas</h3>
-          {loading ? (
-            <p className="loading-text">Cargando citas...</p>
-          ) : userAppointments.length > 0 ? (
-            <div className="user-appointments-list">
-              {userAppointments.map(appointment => (
+          <h3>Citas de la Semana</h3>
+          {currentWeekAppointments.length > 0 ? (
+            <div className="appointments-list">
+              {currentWeekAppointments.map(appointment => (
                 <div key={appointment.id} className="appointment-item">
-                  <div className="appointment-date">
-                    {formatDate(appointment.date)} - {appointment.time}
+                  <div className="appointment-header">
+                    <span className="client-name">{appointment.clientName}</span>
+                    <span className={`status ${appointment.confirmed ? 'confirmed' : 'pending'}`}>
+                      {appointment.confirmed ? '✓' : '⌛'}
+                    </span>
                   </div>
-                  <div className="appointment-service">
-                    {appointment.service}
-                  </div>
-                  <div className={`appointment-status ${appointment.confirmed ? 'confirmed' : 'pending'}`}>
-                    {appointment.confirmed ? 'Confirmada' : 'Pendiente'}
+                  <div className="appointment-details">
+                    <span>{formatDate(appointment.date)}</span>
+                    <span>{appointment.time}</span>
+                    <span>{appointment.service}</span>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="no-appointments">No tienes citas agendadas</p>
+            <p className="no-appointments">No hay citas esta semana</p>
           )}
         </div>
       </div>

@@ -22,14 +22,14 @@ const AdminAppointments = () => {
     
     const fetchAppointments = async () => {
       try {
-        console.log('Solicitando citas al servidor...');
+        // console.log('Solicitando citas al servidor...');
         
         const response = await axios.get('/api/admin/appointments', {
           headers: { Authorization: `Bearer ${token}` }
         });
         
         if (response.data.success) {
-          console.log('Citas recibidas:', response.data.appointments.length);
+          // console.log('Citas recibidas:', response.data.appointments.length);
           setAppointments(response.data.appointments);
         } else {
           console.error('Error en la respuesta:', response.data);

@@ -32,7 +32,7 @@ const AdminDashboard = () => {
         
         if (statsResponse.data.success) {
           setStats(statsResponse.data.stats);
-          console.log("Estadísticas cargadas:", statsResponse.data.stats);
+          // console.log("Estadísticas cargadas:", statsResponse.data.stats);
         }
         
         // Obtener citas recientes

@@ -7,18 +7,25 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 const fs = require('fs');
 const upload = require('../config/multerPayment');
+const { Op } = require('sequelize');
+const moment = require('moment-timezone');
 
 services: [
   { id: "haircut", name: "Corte de cabello", price: 5, duration: 30 },
   { id: "beard", name: "Afeitado de barba", price: 5, duration: 20 },
   { id: "beard", name: "Alineado de barba", price: 5, duration: 15 },  // Same id "beard"
-  { id: "paquetes", name: "Paquete 1", price: 7, duration: 45 },
-  { id: "paquetes", name: "Paquete 2", price: 8, duration: 60 },      // Same id "paquetes"
-  { id: "paquetes", name: "Paquete 3", price: 8, duration: 75 },      // Same id "paquetes"
-  { id: "paquetes", name: "Paquete 4", price: 8, duration: 90 },      // Same id "paquetes"
+  { id: "paquetes", name: "Corte + Refrigerio", price: 8, duration: 75 },
+  { id: "paquetes", name: "Corte + Barba", price: 8, duration: 90 },      // Same id "paquetes"
 ]
-// Crear una nueva cita
-// Crear una nueva cita
+const formatDateString = (dateStr) => {
+  const [year, month, day] = dateStr.split('-');
+  const months = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
+  return `${parseInt(day)} de ${months[parseInt(month) - 1]} de ${year}`;
+};
+
 router.post('/', upload.single('paymentProof'), async (req, res) => {
   try {
     console.log('Datos recibidos en el cuerpo:', req.body);
@@ -90,7 +97,7 @@ router.post('/', upload.single('paymentProof'), async (req, res) => {
         Gracias por agendar una cita con Medina Barber. A continuación, los detalles de tu cita:
         
         Servicio: ${service}
-        Fecha: ${new Date(date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        Fecha: ${formatDateString(date)}
         Hora: ${time}
         
         Tu cita está pendiente de confirmación. Recibirás un correo cuando sea confirmada por nuestro equipo.
@@ -115,7 +122,7 @@ router.post('/', upload.single('paymentProof'), async (req, res) => {
         Cliente: ${clientName}
         Email: ${email}
         Servicio: ${service}
-        Fecha: ${new Date(date).toLocaleDateString('es-ES')}
+        Fecha: ${formatDateString(date)}
         Hora: ${time}
         Notas: ${notes || 'Sin notas'}
         Método de pago: ${paymentMethod || 'efectivo'}
@@ -175,23 +182,37 @@ router.put('/confirm/:id', verifyToken, async (req, res) => {
     await cita.save();
     
     // Enviar correo al cliente
-    const confirmationMessage = `
-      Hola ${cita.clientName},
+    try {
+      const confirmationMessage = `
+        Hola ${cita.clientName},
+        
+        ¡Tu cita en Medina Barber ha sido confirmada!
+        
+        Detalles de la cita confirmada:
+        📅 Fecha: ${formatDateString(cita.date)}
+        ⏰ Hora: ${cita.time}
+        ✂ Servicio: ${cita.service}
+        
+        Te esperamos en nuestro local 10 minutos antes de tu hora agendada.
+        
+        Si necesitas cancelar o modificar tu cita, por favor contáctanos con al menos 24 horas de anticipación.
+        
+        Saludos,
+        Equipo de Medina Barber
+      `;
       
-      ¡Tu cita ha sido confirmada!
+      await sendMail(
+        cita.email, 
+        '✅ Cita Confirmada - Medina Barber', 
+        confirmationMessage
+      );
       
-      Detalles de la cita:
-      Servicio: ${cita.service}
-      Fecha: ${new Date(cita.date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-      Hora: ${cita.time}
+      console.log(`Correo de confirmación enviado a ${cita.email}`);
       
-      Te esperamos en Medina Barber. Si necesitas cancelar o modificar tu cita, por favor contáctanos con al menos 24 horas de anticipación.
-      
-      Saludos,
-      Equipo de Medina Barber
-    `;
-    
-    await sendMail(cita.email, 'Cita Confirmada - Medina Barber', confirmationMessage);
+    } catch (emailError) {
+      console.error('Error al enviar correo de confirmación:', emailError);
+      // No detenemos el proceso aunque falle el correo
+    }
     
     res.status(200).json({
       success: true,
@@ -322,7 +343,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
     const cancelMessage = `
       Hola ${cita.clientName},
       
-      Tu cita para el ${new Date(cita.date).toLocaleDateString('es-ES')} a las ${cita.time} ha sido cancelada correctamente.
+      Tu cita para el ${formatDateString(date)} a las ${cita.time} ha sido cancelada correctamente.
       
       Esperamos verte pronto en Medina Barber.
       
@@ -339,7 +360,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
       Cliente: ${cita.clientName}
       Email: ${cita.email}
       Servicio: ${cita.service}
-      Fecha: ${new Date(cita.date).toLocaleDateString('es-ES')}
+      Fecha: ${formatDateString(date)}
       Hora: ${cita.time}
     `;
     
@@ -372,10 +393,8 @@ router.get('/settings', async (req, res) => {
           { id: "haircut", name: "Corte de cabello", price: 5, duration: 30 },
           { id: "beard", name: "Afeitado de barba", price: 5, duration: 20 },
           { id: "beard", name: "Alineado de barba", price: 5, duration: 15 },
-          { id: "paquetes", name: "Paquete 1", price: 10, duration: 45 },
-          { id: "paquetes", name: "Paquete 2", price: 10, duration: 60 },
-          { id: "paquetes", name: "Paquete 3", price: 8, duration: 75 },
-          { id: "paquetes", name: "Paquete 4", price: 8, duration: 90 },
+          { id: "paquetes", name: "Corte + Refrigerio", price: 8, duration: 75 },
+          { id: "paquetes", name: "Corte + Barba", price: 8, duration: 90 },  
         ],
         timeSlots: [
           "10:00", "10:30", "11:00", "11:30",
@@ -389,6 +408,34 @@ router.get('/settings', async (req, res) => {
       success: false,
       message: 'Error al obtener configuración',
       error: error.message
+    });
+  }
+});
+
+router.get('/all', verifyToken, async (req, res) => {
+  try {
+    // Calcular inicio y fin de semana
+    const startOfWeek = moment().startOf('isoWeek').toDate(); // Lunes
+    const endOfWeek = moment().endOf('isoWeek').toDate();     // Domingo
+
+    const citas = await db.Citas.findAll({
+      where: {
+        date: {
+          [Op.between]: [startOfWeek, endOfWeek]
+        }
+      },
+      order: [['date', 'ASC'], ['time', 'ASC']]
+    });
+    
+    res.status(200).json({ 
+      success: true, 
+      appointments: citas 
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al obtener citas' 
     });
   }
 });
