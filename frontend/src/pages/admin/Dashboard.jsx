@@ -32,6 +32,7 @@ const AdminDashboard = () => {
         
         if (statsResponse.data.success) {
           setStats(statsResponse.data.stats);
+          console.log("Estadísticas cargadas:", statsResponse.data.stats);
         }
         
         // Obtener citas recientes
@@ -47,6 +48,7 @@ const AdminDashboard = () => {
         setLoading(false);
       } catch (error) {
         console.error('Error al cargar datos:', error);
+        console.error('Detalles del error:', error.response?.data);
         
         // Si es un error de autorización, redirigir al login
         if (error.response && error.response.status === 403) {

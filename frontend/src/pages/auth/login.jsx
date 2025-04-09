@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 
 const Auth = ({ setIsAuthenticated, setIsAdmin }) => {
   document.title = 'Login | Medina Barber'
   const navigate = useNavigate();
-
+  const location = useLocation();
+  
+  // Obtener información de redirección si existe
+  const redirectTo = location.state?.redirectTo || '/pages/perfil';
+  
   // Estado para el formulario de Login
   const [loginForm, setLoginForm] = useState({
     email: '',
@@ -26,6 +31,16 @@ const Auth = ({ setIsAuthenticated, setIsAdmin }) => {
   const [verificationStep, setVerificationStep] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [verificationEmail, setVerificationEmail] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Mostrar mensaje si viene de redirección
+  useEffect(() => {
+    if (location.state?.message) {
+      setLoginMessage(location.state.message);
+    }
+  }, [location]);
 
   // Manejador de cambios para el Login
   const handleLoginChange = (e) => {
@@ -34,6 +49,18 @@ const Auth = ({ setIsAuthenticated, setIsAdmin }) => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const toggleLoginPasswordVisibility = () => {
+    setShowLoginPassword(!showLoginPassword);
+  };
+
+  const toggleRegisterPasswordVisibility = () => {
+    setShowRegisterPassword(!showRegisterPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
   };
 
   // Envío del formulario de Login
@@ -69,11 +96,11 @@ const Auth = ({ setIsAuthenticated, setIsAdmin }) => {
           setIsAdmin(isAdmin);
         }
         
-        // Redirigir según el rol
+        // Redirigir según el rol o a la página que intentaba acceder
         if (isAdmin) {
           navigate('/admin/dashboard');
         } else {
-          navigate('/pages/perfil');
+          navigate(redirectTo);
         }
       }
     } catch (error) {
@@ -200,14 +227,23 @@ const Auth = ({ setIsAuthenticated, setIsAdmin }) => {
             </div>
             <div className="form-group">
               <label>Contraseña *</label>
-              <input
-                type="password"
-                name="password"
-                className="input"
-                required
-                value={loginForm.password}
-                onChange={handleLoginChange}
-              />
+              <div className="password-input-container">
+                <input
+                  type={showLoginPassword ? "text" : "password"}
+                  name="password"
+                  className="input"
+                  required
+                  value={loginForm.password}
+                  onChange={handleLoginChange}
+                />
+                <button 
+                  type="button" 
+                  className="toggle-password-button"
+                  onClick={toggleLoginPasswordVisibility}
+                >
+                  {showLoginPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
             <div className="forgot-password">
               <Link to="/pages/auth/forgotPassword">¿Olvidó su contraseña?</Link>
@@ -218,7 +254,6 @@ const Auth = ({ setIsAuthenticated, setIsAdmin }) => {
             {loginMessage && <p className="message">{loginMessage}</p>}
             <div className='parraf-login'>
               <p className='parraf-log'>Tu privacidad es importante para nosotros. Usaremos tus datos para que tu experiencia en el sitio sea aún mejor, para que puedas acceder a tu cuenta sin problemas y para otros fines que te explicamos en nuestra política de privacidad.</p>
-
             </div>
           </form>
         </div>
@@ -266,66 +301,83 @@ const Auth = ({ setIsAuthenticated, setIsAdmin }) => {
                 </div>
                 <div className="form-group">
                   <label>Contraseña *</label>
-                  <input
-                    type="password"
-                    name="password"
-                    className="input"
-                    required
-                    value={registerForm.password}
-                    onChange={handleRegisterChange}
-                  />
+                  <div className="password-input-container">
+                    <input
+                      type={showRegisterPassword ? "text" : "password"}
+                      name="password"
+                      className="input"
+                      required
+                      value={registerForm.password}
+                      onChange={handleRegisterChange}
+                    />
+                    <button 
+                      type="button" 
+                      className="toggle-password-button"
+                      onClick={toggleRegisterPasswordVisibility}
+                    >
+                      {showRegisterPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
                 <div className="form-group">
                   <label>Confirmar contraseña *</label>
+                  <div className="password-input-container">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      className="input"
+                      required
+                      value={registerForm.confirmPassword}
+                      onChange={handleRegisterChange}
+                    />
+                    <button 
+                      type="button" 
+                      className="toggle-password-button"
+                      onClick={toggleConfirmPasswordVisibility}
+                    >
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+                <div className="form-actions">
+                  <button type="submit">Enviar</button>
+                </div>
+                {registerMessage && <p className="message">{registerMessage}</p>}
+              </form>
+            </>
+          ) : (
+            <>
+              <section className="register-titulo">
+                <h2>Verificación de Correo</h2>
+              </section>
+              <form className="register-form" onSubmit={handleVerificationSubmit}>
+                <div className="form-group">
+                  <label className='code-verification'>Código de verificación *</label>
+                  <p className="verification-info">
+                    Hemos enviado un código de verificación a {verificationEmail}. 
+                    Por favor, revisa tu bandeja de entrada o correos no deseados e ingresa el código a continuación.
+                  </p>
                   <input
-                    type="password"
-                    name="confirmPassword"
+                    type="text"
+                    name="verificationCode"
                     className="input"
                     required
-                    value={registerForm.confirmPassword}
-                    onChange={handleRegisterChange}
-                          />
-                                    </div>
-                                    <div className="form-actions">
-                                      <button type="submit">Enviar</button>
-                                    </div>
-                                    {registerMessage && <p className="message">{registerMessage}</p>}
-                                  </form>
-                                </>
-                              ) : (
-                                <>
-                                  <section className="register-titulo">
-                                    <h2>Verificación de Correo</h2>
-                                  </section>
-                                  <form className="register-form" onSubmit={handleVerificationSubmit}>
-                                    <div className="form-group">
-                                      <label className='code-verification'>Código de verificación *</label>
-                                      <p className="verification-info">
-                                        Hemos enviado un código de verificación a {verificationEmail}. 
-                                        Por favor, revisa tu bandeja de entrada o correos no deseados e ingresa el código a continuación.
-                                      </p>
-                                      <input
-                                        type="text"
-                                        name="verificationCode"
-                                        className="input"
-                                        required
-                                        value={verificationCode}
-                                        onChange={handleVerificationCodeChange}
-                                        placeholder="Ingresa el código de 6 dígitos"
-                                      />
-                                    </div>
-                                    <div className="form-actions">
-                                      <button type="submit">Verificar</button>
-                                    </div>
-                                    {registerMessage && <p className="message">{registerMessage}</p>}
-                                  </form>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </>
-                      );
-                    };
-                    
-                    export default Auth;
+                    value={verificationCode}
+                    onChange={handleVerificationCodeChange}
+                    placeholder="Ingresa el código de 6 dígitos"
+                  />
+                </div>
+                <div className="form-actions">
+                  <button type="submit">Verificar</button>
+                </div>
+                {registerMessage && <p className="message">{registerMessage}</p>}
+              </form>
+            </>
+          )}
+        </div>
+      </div>
+    </>
+  );
+};      
+export default Auth;
                     

@@ -365,6 +365,42 @@ body{
 .code-verification{
   margin-bottom: 1.5rem;
 }
+/* Estilos para el contenedor de input de contraseña */
+.password-input-container {
+  position: relative;
+  display: flex;
+  width: 100%;
+}
+
+.password-input-container input {
+  flex: 1;
+  padding-right: 40px; /* Espacio para el botón */
+}
+
+.toggle-password-button {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  padding: 0;
+  margin: 0;
+}
+
+.toggle-password-button:hover {
+  color: #333;
+}
+
+.toggle-password-button:focus {
+  outline: none;
+}
+
 /* ---------------------------------- FOOTER ----------------------------------- */
 .forgot-footer {
   background-color: var(--azulOscuro);
@@ -1486,6 +1522,553 @@ body{
 .save-button:hover {
   background-color: var(--azulOsucuroClaro);
 }
+/* Estilos para el modal de citas - Paso de confirmación */
+.confirmation-step {
+  padding: 20px;
+}
+
+.appointment-summary {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.appointment-summary h4 {
+  margin: 0 0 15px 0;
+  color: var(--azulOscuro);
+  font-size: 1.1rem;
+  border-bottom: 1px solid var(--grisClaro);
+  padding-bottom: 8px;
+}
+
+.summary-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+
+.summary-item svg {
+  margin-right: 10px;
+  color: var(--azulClaro);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.summary-item strong {
+  font-weight: 600;
+  margin-right: 5px;
+  color: var(--azulOsucuroClaro);
+}
+
+.payment-options {
+  margin-bottom: 20px;
+}
+
+.payment-options h4 {
+  margin: 0 0 15px 0;
+  color: var(--azulOscuro);
+  font-size: 1.1rem;
+}
+
+.payment-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.payment-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.payment-option input[type="radio"] {
+  accent-color: var(--azulClaro);
+  width: 18px;
+  height: 18px;
+}
+
+.payment-option label {
+  font-size: 0.95rem;
+  color: var(--azulOscuro);
+  cursor: pointer;
+}
+
+.card-payment-form {
+  background-color: #f0f7ff;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 10px;
+}
+
+.payment-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.85rem;
+  color: #1976d2;
+}
+
+.payment-note svg {
+  flex-shrink: 0;
+}
+
+.terms-agreement {
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+.terms-agreement p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* Botones para navegación entre pasos */
+.next-button, .back-button, .confirm-button {
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.next-button {
+  background-color: var(--azulOscuro);
+  color: white;
+  border: none;
+}
+
+.next-button:hover {
+  background-color: var(--azulOsucuroClaro);
+}
+
+.back-button {
+  background-color: #f5f5f5;
+  color: var(--azulOscuro);
+  border: 1px solid #ddd;
+}
+
+.back-button:hover {
+  background-color: #e0e0e0;
+}
+
+.confirm-button {
+  background-color: #388e3c;
+  color: white;
+  border: none;
+}
+
+.confirm-button:hover {
+  background-color: #2e7d32;
+}
+
+.confirm-button:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
+}
+
+/* Mensajes de error en formularios */
+.form-group.error input,
+.form-group.error select,
+.form-group.error textarea {
+  border-color: #d32f2f;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #d32f2f;
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+/* Overlay de mensajes */
+.message-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.message-content {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.message-content p {
+  margin: 0 0 15px 0;
+  font-size: 1rem;
+}
+
+.message-content button {
+  padding: 8px 15px;
+  background-color: var(--azulOscuro);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.message-overlay.success .message-content {
+  border-top: 4px solid #388e3c;
+}
+
+.message-overlay.error .message-content {
+  border-top: 4px solid #d32f2f;
+}
+
+/* Estilos para las citas en el calendario */
+.appointment-marker {
+  background-color: rgba(119, 141, 169, 0.1);
+  border-left: 3px solid var(--azulClaro);
+  padding: 4px 6px;
+  border-radius: 2px;
+  font-size: 0.8rem;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appointment-marker.confirmed {
+  border-left-color: #388e3c;
+  background-color: rgba(56, 142, 60, 0.1);
+}
+
+.appointment-marker.pending {
+  border-left-color: #ffa000;
+  background-color: rgba(255, 160, 0, 0.1);
+}
+
+/* Estilos para la lista de citas del usuario */
+.user-appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.appointment-item {
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 0.9rem;
+}
+
+.appointment-date {
+  font-weight: 500;
+  color: var(--azulOscuro);
+  margin-bottom: 3px;
+}
+
+.appointment-service {
+  color: #666;
+  margin-bottom: 3px;
+}
+
+.appointment-status {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.appointment-status.confirmed {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+.appointment-status.pending {
+  background-color: #fff8e1;
+  color: #ffa000;
+}
+
+.loading-text {
+  color: #666;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+.pago-movil-info {
+  background-color: #f0f7ff;
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 10px;
+}
+
+.pago-movil-info h5 {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  color: var(--azulOscuro);
+  border-bottom: 1px solid rgba(119, 141, 169, 0.3);
+  padding-bottom: 8px;
+}
+
+.pago-movil-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.pago-movil-item svg {
+  color: var(--azulClaro);
+  flex-shrink: 0;
+}
+
+.pago-movil-item strong {
+  font-weight: 600;
+  margin-right: 5px;
+  color: var(--azulOsucuroClaro);
+}
+
+.payment-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0 0 0;
+  font-size: 0.85rem;
+  color: #1976d2;
+  background-color: rgba(25, 118, 210, 0.08);
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.payment-note svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+/* Estilos para la información de pago móvil */
+.pago-movil-info {
+  background-color: #f0f7ff;
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 10px;
+}
+
+.pago-movil-info h5 {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  color: var(--azulOscuro);
+  border-bottom: 1px solid rgba(119, 141, 169, 0.3);
+  padding-bottom: 8px;
+}
+
+.pago-movil-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.pago-movil-item svg {
+  color: var(--azulClaro);
+  flex-shrink: 0;
+}
+
+.pago-movil-item strong {
+  font-weight: 600;
+  margin-right: 5px;
+  color: var(--azulOsucuroClaro);
+}
+
+.payment-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0 0 0;
+  font-size: 0.85rem;
+  color: #1976d2;
+  background-color: rgba(25, 118, 210, 0.08);
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.payment-note svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Estilos para el formulario de comprobante de pago */
+.payment-proof-form {
+  padding: 20px;
+}
+
+.payment-proof-form h4 {
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+  color: var(--azulOscuro);
+}
+
+.payment-proof-info {
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+.file-upload-area {
+  border: 2px dashed var(--azulClaro);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.file-upload-area:hover {
+  background-color: rgba(119, 141, 169, 0.05);
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #666;
+}
+
+.upload-placeholder svg {
+  color: var(--azulClaro);
+}
+
+.payment-proof-preview {
+  max-width: 100%;
+  max-height: 200px;
+  margin-top: 10px;
+  border-radius: 4px;
+}
+
+/* Estilos para el recibo de pago */
+.payment-receipt {
+  padding: 20px;
+}
+
+.receipt-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.success-icon {
+  color: #4caf50;
+  background-color: rgba(76, 175, 80, 0.1);
+  padding: 10px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.receipt-header h4 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--azulOscuro);
+}
+
+.receipt-details {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.receipt-message {
+  margin: 0 0 20px 0;
+  font-size: 0.95rem;
+  color: #333;
+  line-height: 1.5;
+}
+
+.receipt-summary {
+  background-color: white;
+  border-radius: 6px;
+  padding: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.receipt-summary h5 {
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+  color: var(--azulOscuro);
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.receipt-item {
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.receipt-item:last-child {
+  margin-bottom: 0;
+}
+
+.receipt-item strong {
+  font-weight: 600;
+  color: var(--azulOsucuroClaro);
+  margin-right: 5px;
+}
+.past-day {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  background-color: #f0f0f0;
+  color: #999;
+}
+
+.mini-day.past-day {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  color: #999;
+}
+
+.day-cell.past-day:hover {
+  background-color: #f0f0f0 !important;
+  cursor: not-allowed !important;
+}
+
+.mini-day.past-day:hover {
+  background-color: transparent !important;
+  cursor: not-allowed !important;
+}
+.spinner {
+  animation: rotate 1s linear infinite;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #ddd;
+  border-top-color: #333;
+  border-radius: 50%;
+}
+
+@keyframes rotate {
+  to { transform: rotate(360deg); }
+}
+
 /* --------------------------------------- PERFIL -------------------------------------- */
 .profile-container {
   margin: 0 auto;
@@ -3215,6 +3798,23 @@ body{
   .cortes-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
+  .appointment-modal {
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .summary-item {
+    flex-direction: column;
+  }
+  
+  .summary-item svg {
+    display: none;
+  }
+  
+  .payment-selection {
+    gap: 15px;
+  }
 }
 @media (max-width: 576px) {
   .calendario-days-grid {
@@ -3273,5 +3873,17 @@ body{
   
   .corte-image {
     height: 120px;
+  }
+  .form-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .next-button, .back-button, .confirm-button, .cancel-button {
+    width: 100%;
+  }
+  
+  .appointment-summary {
+    padding: 10px;
   }
 }

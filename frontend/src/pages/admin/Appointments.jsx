@@ -22,17 +22,23 @@ const AdminAppointments = () => {
     
     const fetchAppointments = async () => {
       try {
+        console.log('Solicitando citas al servidor...');
+        
         const response = await axios.get('/api/admin/appointments', {
           headers: { Authorization: `Bearer ${token}` }
         });
         
         if (response.data.success) {
+          console.log('Citas recibidas:', response.data.appointments.length);
           setAppointments(response.data.appointments);
+        } else {
+          console.error('Error en la respuesta:', response.data);
         }
         
         setLoading(false);
       } catch (error) {
         console.error('Error al cargar citas:', error);
+        console.error('Detalles del error:', error.response?.data);
         
         if (error.response && error.response.status === 403) {
           alert("No tienes permisos de administrador para acceder a esta página");
@@ -137,6 +143,27 @@ const AdminAppointments = () => {
       day: 'numeric' 
     });
   };
+
+  const refreshAppointments = async () => {
+    setLoading(true);
+    const token = localStorage.getItem("token");
+    
+    try {
+      const response = await axios.get('/api/admin/appointments', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setAppointments(response.data.appointments);
+        alert("Lista de citas actualizada");
+      }
+      
+      setLoading(false);
+    } catch (error) {
+      console.error('Error al actualizar citas:', error);
+      setLoading(false);
+    }
+  };
   
   if (loading) {
     return (
@@ -159,19 +186,13 @@ const AdminAppointments = () => {
         <div className="admin-header">
           <h1>Gestión de Citas</h1>
           <div className="admin-actions">
-            <div className="filter-container">
-              <Filter size={18} className="filter-icon" />
-              <select 
-                className="filter-select"
-                value={filter}
-                onChange={handleFilterChange}
-              >
-                <option value="all">Todas las citas</option>
-                <option value="pending">Pendientes</option>
-                <option value="confirmed">Confirmadas</option>
-                <option value="paid">Pagadas</option>
-              </select>
-            </div>
+          <button 
+            className="refresh-button"
+            onClick={refreshAppointments}
+            disabled={loading}
+          >
+            {loading ? "Actualizando..." : "Actualizar citas"}
+          </button>
             
             <div className="search-container">
               <Search size={18} className="search-icon" />

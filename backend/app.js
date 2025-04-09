@@ -32,7 +32,7 @@ const db = require('./models');
 db.sequelize.authenticate()
 .then(() => {
     console.log('Conexión a la base de datos establecida');
-    return Promise.resolve(); 
+    return db.sequelize.sync({ alter: true }); // 👈 ¡Agrega esto!
 })
 .then(() => {
     console.log('Modelos sincronizados');
@@ -41,12 +41,19 @@ db.sequelize.authenticate()
     console.error('Error al conectar con la base de datos:', err);
 });
 
+
+
 const userRoutes = require('./controllers/userController');
 app.use('/api/users', userRoutes)
+
 const contactoRoutes = require('./controllers/contactoControllers');
 app.use('/api/contacto', contactoRoutes);
+
 const adminRoutes = require('./controllers/adminController');
 app.use('/api/admin', adminRoutes);
+
+const agendarRoutes = require('./controllers/agendarControllers');
+app.use('/api/agendar', agendarRoutes);
 
 app.listen(port, () =>{
     console.log(`Corriendo: http://${host}:${port}`)

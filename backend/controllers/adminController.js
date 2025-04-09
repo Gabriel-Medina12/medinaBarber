@@ -38,30 +38,22 @@ const upload = multer({
 // Obtener estadísticas para el dashboard
 router.get('/dashboard', verifyToken, isAdmin, async (req, res) => {
   try {
+    console.log('Obteniendo estadísticas para el dashboard...');
+    
     // Contar usuarios
+    console.log('Contando usuarios...');
     const userCount = await db.Users.count();
+    console.log('Usuarios contados:', userCount);
     
-    // Contar citas para la semana actual
-    const today = new Date();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay());
-    startOfWeek.setHours(0, 0, 0, 0);
+    // Contar citas
+    console.log('Contando citas...');
+    const appointmentCount = await db.Citas.count();
+    console.log('Citas contadas:', appointmentCount);
     
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-    endOfWeek.setHours(23, 59, 59, 999);
-    
-    // Asumiendo que tienes un modelo Citas
-    const appointmentCount = await db.Citas.count({
-      where: {
-        fecha: {
-          [db.Sequelize.Op.between]: [startOfWeek, endOfWeek]
-        }
-      }
-    });
-    
-    // Contar mensajes de contacto
-    const contactCount = await db.Contacto.count();
+    // Contar mensajes de contacto - Usar el nombre correcto del modelo
+    console.log('Contando mensajes de contacto...');
+    const contactCount = await db.Contactos.count();
+    console.log('Mensajes contados:', contactCount);
     
     res.status(200).json({
       success: true,
@@ -72,10 +64,15 @@ router.get('/dashboard', verifyToken, isAdmin, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error al obtener estadísticas:', error);
-    res.status(500).json({ success: false, message: 'Error al obtener estadísticas' });
+    console.error('Error detallado al obtener estadísticas:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al obtener estadísticas',
+      error: error.message
+    });
   }
 });
+
 
 // Obtener todos los usuarios
 router.get('/users', verifyToken, isAdmin, async (req, res) => {
@@ -152,31 +149,24 @@ router.delete('/users/:userId', verifyToken, isAdmin, async (req, res) => {
 });
 
 // Obtener citas para la semana
+// Obtener todas las citas
 router.get('/appointments', verifyToken, isAdmin, async (req, res) => {
   try {
-    const today = new Date();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay());
-    startOfWeek.setHours(0, 0, 0, 0);
-    
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-    endOfWeek.setHours(23, 59, 59, 999);
+    console.log('Obteniendo todas las citas para el administrador');
     
     const appointments = await db.Citas.findAll({
-      where: {
-        fecha: {
-          [db.Sequelize.Op.between]: [startOfWeek, endOfWeek]
-        }
-      },
       include: [
         {
           model: db.Users,
-          attributes: ['id', 'fullName', 'email', 'avatar']
+          as: 'user',
+          attributes: ['id', 'fullName', 'email', 'avatar'],
+          required: false // Esto hace que sea un LEFT JOIN, para obtener citas sin usuario asociado
         }
       ],
-      order: [['fecha', 'ASC']]
+      order: [['date', 'ASC'], ['time', 'ASC']]
     });
+    
+    console.log(`Encontradas ${appointments.length} citas`);
     
     res.status(200).json({
       success: true,
@@ -187,6 +177,7 @@ router.get('/appointments', verifyToken, isAdmin, async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al obtener citas' });
   }
 });
+
 
 // Confirmar cita y pago
 router.put('/appointments/:appointmentId/confirm', verifyToken, isAdmin, async (req, res) => {
@@ -199,8 +190,9 @@ router.put('/appointments/:appointmentId/confirm', verifyToken, isAdmin, async (
       return res.status(404).json({ success: false, message: 'Cita no encontrada' });
     }
     
-    if (confirmado !== undefined) appointment.confirmado = confirmado;
-    if (pagado !== undefined) appointment.pagado = pagado;
+    // Usar los nombres correctos de los campos
+    if (confirmado !== undefined) appointment.confirmed = confirmado;
+    if (pagado !== undefined) appointment.paid = pagado;
     
     await appointment.save();
     

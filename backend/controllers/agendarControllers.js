@@ -1,0 +1,396 @@
+const express = require('express');
+const router = express.Router();
+const { verifyToken } = require('../middleware/auth');
+const db = require('../models');
+const { sendMail } = require('./sendMail');
+const jwt = require('jsonwebtoken');
+const path = require('path');
+const fs = require('fs');
+const upload = require('../config/multerPayment');
+
+services: [
+  { id: "haircut", name: "Corte de cabello", price: 5, duration: 30 },
+  { id: "beard", name: "Afeitado de barba", price: 5, duration: 20 },
+  { id: "beard", name: "Alineado de barba", price: 5, duration: 15 },  // Same id "beard"
+  { id: "paquetes", name: "Paquete 1", price: 7, duration: 45 },
+  { id: "paquetes", name: "Paquete 2", price: 8, duration: 60 },      // Same id "paquetes"
+  { id: "paquetes", name: "Paquete 3", price: 8, duration: 75 },      // Same id "paquetes"
+  { id: "paquetes", name: "Paquete 4", price: 8, duration: 90 },      // Same id "paquetes"
+]
+// Crear una nueva cita
+// Crear una nueva cita
+router.post('/', upload.single('paymentProof'), async (req, res) => {
+  try {
+    console.log('Datos recibidos en el cuerpo:', req.body);
+    const paymentProofPath = req.file ? req.file.path : null;
+    
+    // Extraer los datos del cuerpo de la solicitud
+    const { 
+      clientName, 
+      service, 
+      date, 
+      time, 
+      notes, 
+      email, 
+      paymentMethod,
+      referenceNumber
+    } = req.body;
+    
+    // Verificar que los datos necesarios estén presentes
+    if (!clientName || !service || !date || !time || !email) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Todos los campos son obligatorios' 
+      });
+    }
+    
+    // Verificar si hay un usuario autenticado
+    let userId = null;
+    if (req.headers.authorization) {
+      const token = req.headers.authorization.split(' ')[1];
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        userId = decoded.id;
+      } catch (tokenError) {
+        console.log('Token inválido o expirado, continuando sin asociar usuario');
+      }
+    }
+
+    if (paymentMethod === 'tarjeta') {
+      if (!paymentProofPath || !referenceNumber) {
+        return res.status(400).json({
+          success: false,
+          message: 'Para pagos con tarjeta se requiere comprobante y número de referencia'
+        });
+      }
+    }
+    
+    // Crear la cita en la base de datos
+    const newCita = await db.Citas.create({
+      userId,
+      clientName,
+      service,
+      date,
+      time,
+      notes,
+      email,
+      paymentMethod: paymentMethod || 'efectivo',
+      referenceNumber: referenceNumber || null,
+      paymentProofPath: req.file ? req.file.path : null,
+      confirmed: false,
+      paid: paymentMethod === 'tarjeta' ? Boolean(paymentProofPath) : false
+    });
+    
+    console.log('Cita creada con éxito:', newCita.toJSON());
+    // Enviar email de confirmación al cliente
+    try {
+      const clientMessage = `
+        Hola ${clientName},
+        
+        Gracias por agendar una cita con Medina Barber. A continuación, los detalles de tu cita:
+        
+        Servicio: ${service}
+        Fecha: ${new Date(date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        Hora: ${time}
+        
+        Tu cita está pendiente de confirmación. Recibirás un correo cuando sea confirmada por nuestro equipo.
+        
+        Si necesitas cancelar o modificar tu cita, por favor contáctanos con al menos 24 horas de anticipación.
+        
+        Saludos,
+        Equipo de Medina Barber
+      `;
+      
+      const emailResult = await sendMail(email, 'Confirmación de cita - Medina Barber', clientMessage);
+      console.log('Resultado de envío de correo al cliente:', emailResult);
+    } catch (emailError) {
+      console.error('Excepción al enviar correo al cliente:', emailError);
+    }
+    
+    // Enviar notificación al administrador
+    try {
+      const adminMessage = `
+        Nueva cita agendada:
+        
+        Cliente: ${clientName}
+        Email: ${email}
+        Servicio: ${service}
+        Fecha: ${new Date(date).toLocaleDateString('es-ES')}
+        Hora: ${time}
+        Notas: ${notes || 'Sin notas'}
+        Método de pago: ${paymentMethod || 'efectivo'}
+        ${referenceNumber ? `Número de referencia: ${referenceNumber}` : ''}
+        ${req.file ? `Comprobante de pago: ${req.file.path}` : ''}
+      `;
+      
+      const adminEmailResult = await sendMail('medinabarber1@gmail.com', 'Nueva cita agendada', adminMessage);
+      console.log('Resultado de envío de correo al administrador:', adminEmailResult);
+    } catch (emailError) {
+      console.error('Excepción al enviar correo al administrador:', emailError);
+    }
+    
+    // Responder con éxito
+    res.status(201).json({
+      success: true,
+      message: 'Cita agendada correctamente',
+      appointment: newCita
+    });
+    
+  } catch (error) {
+    console.error('Error detallado al agendar cita:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al agendar la cita',
+      error: error.message
+    });
+  }
+});
+
+
+// Confirmar una cita (solo para administradores)
+router.put('/confirm/:id', verifyToken, async (req, res) => {
+  try {
+    // Verificar si el usuario es administrador
+    const user = await db.Users.findByPk(req.userId);
+    
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'No tienes permisos para realizar esta acción'
+      });
+    }
+    
+    const citaId = req.params.id;
+    const cita = await db.Citas.findByPk(citaId);
+    
+    if (!cita) {
+      return res.status(404).json({
+        success: false,
+        message: 'Cita no encontrada'
+      });
+    }
+    
+    // Actualizar estado de la cita
+    cita.confirmed = true;
+    await cita.save();
+    
+    // Enviar correo al cliente
+    const confirmationMessage = `
+      Hola ${cita.clientName},
+      
+      ¡Tu cita ha sido confirmada!
+      
+      Detalles de la cita:
+      Servicio: ${cita.service}
+      Fecha: ${new Date(cita.date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+      Hora: ${cita.time}
+      
+      Te esperamos en Medina Barber. Si necesitas cancelar o modificar tu cita, por favor contáctanos con al menos 24 horas de anticipación.
+      
+      Saludos,
+      Equipo de Medina Barber
+    `;
+    
+    await sendMail(cita.email, 'Cita Confirmada - Medina Barber', confirmationMessage);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Cita confirmada correctamente',
+      appointment: cita
+    });
+  } catch (error) {
+    console.error('Error al confirmar cita:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al confirmar la cita'
+    });
+  }
+});
+// Cancelar una cita
+
+// Obtener citas de un usuario
+router.get('/user', verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+    console.log('Buscando citas para el usuario:', userId);
+    
+    // Verificar que userId sea válido
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID de usuario no válido',
+        appointments: []
+      });
+    }
+    
+    const citas = await db.Citas.findAll({
+      where: { userId },
+      order: [['date', 'ASC'], ['time', 'ASC']]
+    });
+    
+    console.log('Citas encontradas:', citas.length);
+    
+    res.status(200).json({
+      success: true,
+      appointments: citas
+    });
+  } catch (error) {
+    console.error('Error detallado al obtener citas:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al obtener las citas',
+      error: error.message,
+      appointments: []  // Devolver array vacío para evitar errores en el frontend
+    });
+  }
+});
+
+// Obtener horarios disponibles para una fecha específica
+router.get('/available-slots', async (req, res) => {
+  try {
+    const { date } = req.query;
+    
+    if (!date) {
+      return res.status(400).json({
+        success: false,
+        message: 'Debes proporcionar una fecha'
+      });
+    }
+    
+    // Obtener todos los horarios configurados
+    const settings = await db.Settings.findOne();
+    const allTimeSlots = settings ? settings.timeSlots : [
+      "10:00", "10:30", "11:00", "11:30",
+      "12:00", "12:30", "13:00", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00"
+    ];
+    
+    // Obtener citas para la fecha seleccionada
+    const bookedAppointments = await db.Citas.findAll({
+      where: { date: date },
+      attributes: ['time']
+    });
+    
+    // Extraer los horarios ya reservados
+    const bookedTimes = bookedAppointments.map(appointment => appointment.time);
+    
+    // Filtrar los horarios disponibles
+    const availableTimeSlots = allTimeSlots.filter(time => !bookedTimes.includes(time));
+    
+    res.status(200).json({
+      success: true,
+      availableTimeSlots
+    });
+  } catch (error) {
+    console.error('Error al obtener horarios disponibles:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener horarios disponibles'
+    });
+  }
+});
+
+// Cancelar una cita
+router.delete('/:id', verifyToken, async (req, res) => {
+  try {
+    const citaId = req.params.id;
+    const userId = req.userId;
+    
+    const cita = await db.Citas.findOne({
+      where: { id: citaId, userId }
+    });
+    
+    if (!cita) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Cita no encontrada o no tienes permiso para cancelarla' 
+      });
+    }
+    
+    // Verificar si la cita es cancelable (por ejemplo, con 24h de antelación)
+    const appointmentDate = new Date(`${cita.date}T${cita.time}`);
+    const now = new Date();
+    const hoursUntilAppointment = (appointmentDate - now) / (1000 * 60 * 60);
+    
+    if (hoursUntilAppointment < 24) {
+      return res.status(400).json({
+        success: false,
+        message: 'Las citas deben cancelarse con al menos 24 horas de anticipación'
+      });
+    }
+    
+    // Enviar email de cancelación
+    const cancelMessage = `
+      Hola ${cita.clientName},
+      
+      Tu cita para el ${new Date(cita.date).toLocaleDateString('es-ES')} a las ${cita.time} ha sido cancelada correctamente.
+      
+      Esperamos verte pronto en Medina Barber.
+      
+      Saludos,
+      Equipo de Medina Barber
+    `;
+    
+    await sendMail(cita.email, 'Cita cancelada - Medina Barber', cancelMessage);
+    
+    // Notificar al administrador
+    const adminMessage = `
+      Cita cancelada:
+      
+      Cliente: ${cita.clientName}
+      Email: ${cita.email}
+      Servicio: ${cita.service}
+      Fecha: ${new Date(cita.date).toLocaleDateString('es-ES')}
+      Hora: ${cita.time}
+    `;
+    
+    await sendMail('medinabarber1@gmail.com', 'Cita cancelada', adminMessage);
+    
+    // Eliminar la cita
+    await cita.destroy();
+    
+    res.status(200).json({
+      success: true,
+      message: 'Cita cancelada correctamente'
+    });
+  } catch (error) {
+    console.error('Error al cancelar cita:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al cancelar la cita' 
+    });
+  }
+});
+
+// Obtener configuración de servicios y horarios
+router.get('/settings', async (req, res) => {
+  try {
+    // Como parece que no tienes una tabla Settings, simplemente devuelve valores predeterminados
+    return res.status(200).json({
+      success: true,
+      settings: {
+        services: [
+          { id: "haircut", name: "Corte de cabello", price: 5, duration: 30 },
+          { id: "beard", name: "Afeitado de barba", price: 5, duration: 20 },
+          { id: "beard", name: "Alineado de barba", price: 5, duration: 15 },
+          { id: "paquetes", name: "Paquete 1", price: 10, duration: 45 },
+          { id: "paquetes", name: "Paquete 2", price: 10, duration: 60 },
+          { id: "paquetes", name: "Paquete 3", price: 8, duration: 75 },
+          { id: "paquetes", name: "Paquete 4", price: 8, duration: 90 },
+        ],
+        timeSlots: [
+          "10:00", "10:30", "11:00", "11:30",
+          "12:00", "12:30", "13:00", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00"
+        ]
+      }
+    });
+  } catch (error) {
+    console.error('Error al obtener configuración:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener configuración',
+      error: error.message
+    });
+  }
+});
+
+module.exports = router;

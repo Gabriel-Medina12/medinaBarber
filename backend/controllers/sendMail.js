@@ -1,20 +1,25 @@
 const transport = require('../config/mail');
 require('dotenv').config()
 
-const sendMail = async (to, subject, text) =>{
+const sendMail = async (to, subject, text) => {
     const mailOption = {
-        from: process.env.EMAIL_USER,
+        from: `"Medina Barber" <${process.env.EMAIL_USER}>`,
         to: to,
         subject: subject,
-        text: text
+        text: text,
+        html: text.replace(/\n/g, '<br>')
     }
-    try{
-        await transport.sendMail(mailOption);
-        return { success: true, message: 'Correo enviado exitosamente' };
-    }catch(err){
-        console.log(err);
-        return { success: false,message: 'Error al enviar el correo' };
+    try {
+        console.log(`Intentando enviar correo a: ${to}`);
+        const info = await transport.sendMail(mailOption);
+        console.log(`Correo enviado exitosamente a ${to}. ID: ${info.messageId}`);
+        return { success: true, message: 'Correo enviado exitosamente', info };
+    } catch (err) {
+        console.error('Error detallado al enviar correo:', err);
+        // Verificaciones de errores...
+        return { success: false, message: 'Error al enviar el correo', error: err.message };
     }
 }
+
 
 module.exports = { sendMail };

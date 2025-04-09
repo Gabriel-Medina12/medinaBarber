@@ -1,8 +1,9 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react"
 import AppointmentModal from "./AppointmentModal"
+import axios from "axios"
 
 function CalendarioCitas() {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -13,56 +14,107 @@ function CalendarioCitas() {
     service: "",
     time: "",
     notes: "",
+    email: "", // Añadimos campo para email
   })
+  const [userAppointments, setUserAppointments] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState({ text: '', type: '' })
+  const [userData, setUserData] = useState(null)
 
   // Servicios disponibles
-  const services = [
-    { id: "haircut", name: "Corte de cabello" },
-    { id: "beard", name: "Afeitado de barba" },
-    { id: "beard", name: "Alineado de barba" },
-    { id: "paquetes", name: "Paquete 1" },
-    { id: "paquetes", name: "Paquete 2" },
-    { id: "paquetes", name: "Paquete 3" },
-    { id: "paquetes", name: "Paquete 4" },
-  ]
+  const [services, setServices] = useState([])
+  
 
   // Horarios disponibles
-  const timeSlots = [
-    "08:00",
-    "08:30",
-    "09:00",
-    "09:30",
-    "10:00",
-    "10:30",
-    "11:00",
-    "11:30",
-    "12:00",
-    "12:30",
-    "13:00",
-    "15:00",
-    "15:30",
-    "16:00",
-    "16:30",
-    "17:00",
-    "17:30",
-    "18:00",
-  ]
+  const [timeSlots, setTimeSlots] = useState([
+    "10:00", "10:30", "11:00", "11:30","12:00", "12:30", "13:00", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00",
+  ])
+
+  // Cargar citas del usuario si está logueado
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchUserAppointments(token);
+      fetchUserData(token);
+    }
+    
+    // Intentar cargar configuración (servicios y horarios disponibles)
+    fetchSettings();
+  }, []);
+  const fetchUserData = async (token) => {
+    try {
+      const response = await axios.get('/api/users/profile', {
+        headers: { 
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.data && response.data.user) {
+        setUserData(response.data.user);
+      }
+    } catch (error) {
+      console.error('Error al obtener datos del usuario:', error);
+    }
+  };
+
+  const fetchUserAppointments = async (token) => {
+    setLoading(true);
+    try {
+      // console.log('Obteniendo citas con token:', token ? 'Token presente' : 'No hay token');
+      
+      if (!token) {
+        // console.log('No hay token, no se cargarán citas');
+        setUserAppointments([]);
+        setLoading(false);
+        return;
+      }
+      
+      const response = await axios.get('/api/agendar/user', {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      // console.log('Respuesta de citas:', response.data);
+      
+      if (response.data.success) {
+        setUserAppointments(response.data.appointments || []);
+      } else {
+        setUserAppointments([]);
+      }
+    } catch (error) {
+      console.error('Error al cargar citas:', error);
+      console.error('Detalles del error:', error.response?.data || 'No hay detalles adicionales');
+      setUserAppointments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchSettings = async () => {
+    try {
+      const response = await axios.get('/api/agendar/settings');
+      
+      if (response.data.success) {
+        if (response.data.settings.services) {
+          setServices(response.data.settings.services);
+        }
+        
+        if (response.data.settings.timeSlots) {
+          setTimeSlots(response.data.settings.timeSlots);
+        }
+      }
+    } catch (error) {
+      console.error('Error al cargar configuración:', error);
+    }
+  };
 
   // Obtener el nombre del mes y año actual
   const getMonthYearString = (date) => {
     const months = [
-      "Enero",
-      "Febrero",
-      "Marzo",
-      "Abril",
-      "Mayo",
-      "Junio",
-      "Julio",
-      "Agosto",
-      "Septiembre",
-      "Octubre",
-      "Noviembre",
-      "Diciembre",
+      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
     ]
     return `${months[date.getMonth()]} ${date.getFullYear()}`
   }
@@ -99,23 +151,23 @@ function CalendarioCitas() {
 
   // Generar una matriz de semanas para el calendario
   const generateCalendarGrid = () => {
-    const days = generateDays()
-    const firstDay = days[0]
-    const lastDay = days[days.length - 1]
-
+    const days = generateDays();
+    const firstDay = days[0];
+    const lastDay = days[days.length - 1];
+  
     // Crear una matriz de 6 semanas x 7 días, inicialmente vacía
     const grid = Array(6)
       .fill()
-      .map(() => Array(7).fill(null))
-
+      .map(() => Array(7).fill(null));
+  
     // Colocar cada día en su posición correcta en la matriz
     days.forEach((dayInfo) => {
-      const weekIndex = Math.floor((firstDay.dayOfWeek + dayInfo.day - 1) / 7)
-      grid[weekIndex][dayInfo.dayOfWeek] = dayInfo
-    })
-
-    return grid
-  }
+      const weekIndex = Math.floor((firstDay.dayOfWeek + dayInfo.day - 1) / 7);
+      grid[weekIndex][dayInfo.dayOfWeek] = dayInfo;
+    });
+  
+    return grid;
+  };
 
   // Navegar al mes anterior
   const handlePrevMonth = () => {
@@ -140,12 +192,39 @@ function CalendarioCitas() {
   // Seleccionar un día
   const handleDayClick = (day) => {
     if (day) {
-      setSelectedDay(day.day)
+      // Crear una fecha con el día seleccionado
+      const selectedDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        day.day
+      );
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (selectedDate < today) {
+        setMessage({
+          text: 'No puedes seleccionar días pasados. Por favor, elige una fecha futura.',
+          type: 'error'
+        });
+        return;
+      }
+      
+      // Si la fecha es válida, actualizar el día seleccionado
+      setSelectedDay(day.day);
     }
-  }
+  };
 
   // Abrir el formulario de nueva cita
   const handleNewAppointment = () => {
+    if (userData){
+      setAppointmentData({
+        ...AppointmentModal,
+        clientName: userData.fullName,
+        email: userData.email,
+      })
+    }
+
     setShowAppointmentForm(true)
   }
 
@@ -158,7 +237,10 @@ function CalendarioCitas() {
       service: "",
       time: "",
       notes: "",
+      email: "",
     })
+    // Limpiar mensaje
+    setMessage({ text: '', type: '' });
   }
 
   // Manejar cambios en el formulario
@@ -171,54 +253,217 @@ function CalendarioCitas() {
   }
 
   // Enviar el formulario
-  const handleSubmit = (e) => {
-    e.preventDefault()
-
-    // Aquí normalmente enviarías los datos al backend
-    console.log("Nueva cita:", {
-      ...appointmentData,
-      day: selectedDay,
-      month: currentDate.getMonth(),
-      year: currentDate.getFullYear(),
-      date: new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDay).toISOString(),
-    })
-
-    // Cerrar el formulario
-    setShowAppointmentForm(false)
-
-    // Limpiar el formulario
-    setAppointmentData({
-      clientName: "",
-      service: "",
-      time: "",
-      notes: "",
-    })
-
-    // Aquí podrías mostrar un mensaje de éxito
-    alert("Cita agendada correctamente.")
+  const handleSubmit = async (e, finalData) => {
+    e.preventDefault();
+  
+    try {
+      setLoading(true);
+      
+      // console.log('Datos a enviar al servidor:', finalData); // Para depuración
+      
+      // Verificar que todos los campos obligatorios estén presentes
+      if (!finalData.clientName || !finalData.service || !finalData.date || 
+          !finalData.time || !finalData.email) {
+        setMessage({
+          text: 'Por favor completa todos los campos obligatorios',
+          type: 'error'
+        });
+        setLoading(false);
+        return;
+      }
+      
+      // Preparar datos para enviar al backend
+      let formData;
+      const headers = {};
+      
+      // Añadir token si el usuario está logueado
+      const token = localStorage.getItem("token");
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
+      // Si es pago con tarjeta y hay comprobante, usar FormData
+      if (finalData.paymentMethod === 'tarjeta' && finalData.paymentProof) {
+        formData = new FormData();
+        formData.append('clientName', finalData.clientName);
+        formData.append('service', finalData.service);
+        formData.append('date', finalData.date);
+        formData.append('time', finalData.time);
+        formData.append('notes', finalData.notes || '');
+        formData.append('email', finalData.email);
+        formData.append('paymentMethod', finalData.paymentMethod);
+        
+        if (finalData.referenceNumber) {
+          formData.append('referenceNumber', finalData.referenceNumber);
+        }
+        
+        if (finalData.paymentProof) {
+          formData.append('paymentProof', finalData.paymentProof);
+        }
+      } else {
+        // Para pago en efectivo, enviar como JSON
+        formData = {
+          clientName: finalData.clientName,
+          service: finalData.service,
+          date: finalData.date,
+          time: finalData.time,
+          notes: finalData.notes || '',
+          email: finalData.email,
+          paymentMethod: finalData.paymentMethod || 'efectivo'
+        };
+        
+        headers['Content-Type'] = 'application/json';
+      }
+      
+      // Enviar al backend
+      const response = await axios.post(
+        '/api/agendar', 
+        formData instanceof FormData ? formData : formData,
+        { headers }
+      );
+      
+      if (response.data.success) {
+        // Mostrar mensaje de éxito
+        setMessage({
+          text: 'Cita agendada correctamente. Recibirás un correo de confirmación.',
+          type: 'success'
+        });
+        
+        // Si el usuario está logueado, actualizar sus citas
+        if (token) {
+          fetchUserAppointments(token);
+        }
+        
+        // Cerrar el formulario después de un tiempo
+        setTimeout(() => {
+          handleCloseForm();
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Error al agendar cita:', error);
+      console.error('Respuesta del servidor:', error.response?.data);
+      setMessage({
+        text: error.response?.data?.message || 'Error al agendar la cita. Inténtalo de nuevo.',
+        type: 'error'
+      });
+    } finally {
+      setLoading(false);
+    }
   }
+  
 
   // Generar mini calendario para la barra lateral
   const generateMiniCalendar = () => {
-    const calendarGrid = generateCalendarGrid()
-
+    const calendarGrid = generateCalendarGrid();
+  
     return calendarGrid.map((week, weekIndex) => (
       <React.Fragment key={`week-${weekIndex}`}>
-        {week.map((day, dayIndex) => (
-          <div
-            key={`day-${weekIndex}-${dayIndex}`}
-            className={`mini-day ${day && day.day === selectedDay ? "selected" : ""} ${!day ? "empty-day" : ""}`}
-            onClick={() => day && handleDayClick(day)}
-          >
-            {day ? day.day : ""}
-          </div>
-        ))}
+        {week.map((day, dayIndex) => {
+          // Verificar si el día es pasado
+          let isPastDay = false;
+          if (day) {
+            const dayDate = new Date(
+              currentDate.getFullYear(),
+              currentDate.getMonth(),
+              day.day
+            );
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            isPastDay = dayDate < today;
+          }
+          
+          return (
+            <div
+              key={`day-${weekIndex}-${dayIndex}`}
+              className={`mini-day ${day && day.day === selectedDay ? "selected" : ""} 
+                         ${!day ? "empty-day" : ""} 
+                         ${isPastDay ? "past-day" : ""}`}
+              onClick={() => day && !isPastDay && handleDayClick(day)}
+            >
+              {day ? day.day : ""}
+            </div>
+          );
+        })}
       </React.Fragment>
-    ))
+    ));
+  };
+
+    {generateCalendarGrid().map((week, weekIndex) => (
+      <React.Fragment key={`week-grid-${weekIndex}`}>
+        {week.map((day, dayIndex) => {
+          // Verificar si el día es pasado
+          let isPastDay = false;
+          if (day) {
+            const dayDate = new Date(
+              currentDate.getFullYear(),
+              currentDate.getMonth(),
+              day.day
+            );
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            isPastDay = dayDate < today;
+          }
+          
+          return (
+            <div
+              key={`grid-day-${weekIndex}-${dayIndex}`}
+              className={`day-cell ${!day ? "empty-cell" : ""} 
+                         ${day && day.day === selectedDay ? "selected" : ""} 
+                         ${isPastDay ? "past-day" : ""}`}
+              onClick={() => day && !isPastDay && handleDayClick(day)}
+            >
+              {day && (
+                <>
+                  <div className="day-number">{day.day}</div>
+                  <div className="day-appointments">
+                    {userAppointments
+                      .filter(appointment => {
+                        const appointmentDate = new Date(appointment.date);
+                        return (
+                          appointmentDate.getDate() === day.day &&
+                          appointmentDate.getMonth() === currentDate.getMonth() &&
+                          appointmentDate.getFullYear() === currentDate.getFullYear()
+                        );
+                      })
+                      .map(appointment => (
+                        <div 
+                          key={appointment.id} 
+                          className={`appointment-marker ${appointment.confirmed ? 'confirmed' : 'pending'}`}
+                          title={`${appointment.service} - ${appointment.time}`}
+                        >
+                          {appointment.time}
+                        </div>
+                      ))}
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })}
+      </React.Fragment>
+    ))}
+
+  // Formatear fecha para mostrar
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
   }
 
   return (
     <div className="calendario-container">
+      {message.text && (
+        <div className={`message-overlay ${message.type}`}>
+          <div className="message-content">
+            <p>{message.text}</p>
+            <button onClick={() => setMessage({ text: '', type: '' })}>Cerrar</button>
+          </div>
+        </div>
+      )}
+      
       <div className="calendario-sidebar">
         <div className="sidebar-header">
           <h2>Agenda</h2>
@@ -238,12 +483,28 @@ function CalendarioCitas() {
         </div>
 
         <div className="sidebar-appointments">
-          <h3>Todas mis citas</h3>
-          {/* <p className="no-appointments">Las citas se cargarán desde la base de datos</p>
-          <div className="sidebar-info">
-            <p>Para agregar una nueva cita, haz clic en el botón "Nueva cita" en la parte superior.</p>
-            <p>Las citas se mostrarán aquí una vez que se carguen desde el backend.</p>
-          </div> */}
+          <h3>Mis citas</h3>
+          {loading ? (
+            <p className="loading-text">Cargando citas...</p>
+          ) : userAppointments.length > 0 ? (
+            <div className="user-appointments-list">
+              {userAppointments.map(appointment => (
+                <div key={appointment.id} className="appointment-item">
+                  <div className="appointment-date">
+                    {formatDate(appointment.date)} - {appointment.time}
+                  </div>
+                  <div className="appointment-service">
+                    {appointment.service}
+                  </div>
+                  <div className={`appointment-status ${appointment.confirmed ? 'confirmed' : 'pending'}`}>
+                    {appointment.confirmed ? 'Confirmada' : 'Pendiente'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="no-appointments">No tienes citas agendadas</p>
+          )}
         </div>
       </div>
 
@@ -260,10 +521,6 @@ function CalendarioCitas() {
           </div>
 
           <div className="calendario-actions">
-            {/* <div className="search-container">
-              <input type="text" placeholder="Buscar" className="search-input" />
-              <Search size={18} className="search-icon" />
-            </div> */}
             <button className="nueva-cita-btn" onClick={handleNewAppointment}>
               <span>Nueva cita</span>
               <Plus size={18} />
@@ -295,7 +552,24 @@ function CalendarioCitas() {
                       <>
                         <div className="day-number">{day.day}</div>
                         <div className="day-appointments">
-                          {/* Aquí se mostrarían las citas cargadas desde el backend */}
+                          {userAppointments
+                            .filter(appointment => {
+                              const appointmentDate = new Date(appointment.date);
+                              return (
+                                appointmentDate.getDate() === day.day &&
+                                appointmentDate.getMonth() === currentDate.getMonth() &&
+                                appointmentDate.getFullYear() === currentDate.getFullYear()
+                              );
+                            })
+                            .map(appointment => (
+                              <div 
+                                key={appointment.id} 
+                                className={`appointment-marker ${appointment.confirmed ? 'confirmed' : 'pending'}`}
+                                title={`${appointment.service} - ${appointment.time}`}
+                              >
+                                {appointment.time}
+                              </div>
+                            ))}
                         </div>
                       </>
                     )}

@@ -1,19 +1,43 @@
 "use client"
 
-import NavBar from "../components/NavBar"
-import { useRef } from "react"
-import gsap from "gsap"
-import ScrollTrigger from "gsap/ScrollTrigger"
-import { useGSAP } from "@gsap/react"
-
+import React, { useRef, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import NavBar from "../components/NavBar";
+import gsap from "gsap";
+import ScrollTrigger from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(useGSAP, ScrollTrigger)
 
 const Home = () => {
-  const gridRef = useRef()
+  const gridRef = useRef();
+  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Verificar si el usuario está autenticado
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+  }, []);
+
+  const handleAgendarClick = (e) => {
+    e.preventDefault();
+    if (isAuthenticated) {
+      // Si está autenticado, navegar a la página de agendar
+      navigate('/pages/agendar');
+    } else {
+      // Si no está autenticado, navegar al login con un mensaje
+      navigate('/pages/auth/login', { 
+        state: { 
+          message: 'Debes iniciar sesión para agendar una cita',
+          redirectTo: '/pages/agendar'
+        } 
+      });
+    }
+  };
 
   useGSAP(
     () => {
-      const cards = gsap.utils.toArray(".bento-item")
+      const cards = gsap.utils.toArray(".bento-item");
       cards.forEach((card) => {
         gsap.from(card, {
           y: 50,
@@ -25,13 +49,12 @@ const Home = () => {
             start: "top 80%",
             end: "bottom 20%",
             toggleActions: "play none none reverse",
-            // markers: true, // Uncomment for debugging
           },
-        })
-      })
+        });
+      });
     },
-    { scope: gridRef },
-  )
+    { scope: gridRef }
+  );
 
   return (
     <>
@@ -114,7 +137,7 @@ const Home = () => {
                 (+58) 426 1178859
               </a>
             </div>
-            <a href="/pages/agendar" className="appointment-button">
+            <a href="#" onClick={handleAgendarClick} className="appointment-button">
               AGENDAR CITA
             </a>
           </div>
