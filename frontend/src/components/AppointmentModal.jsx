@@ -752,17 +752,22 @@ function AppointmentModal({
             </div>
             
             <div className="form-actions">
-              <button type="button" className="back-button" onClick={handlePrevStep}>
-                Volver
-              </button>
-              <button 
-                type="button" 
-                className="confirm-button"
-                onClick={handleFinalSubmit}
-                disabled={loading}
-              >
-                {loading ? "Procesando..." : "Confirmar cita"}
-              </button>
+            <button 
+              type="button" 
+              className="back-button" 
+              onClick={handlePrevStep}
+              style={{ width: '100%', marginBottom: '8px' }}
+            >
+              Volver
+            </button>
+            <button 
+              type="submit" 
+              className="next-button"
+              disabled={loading}
+              style={{ width: '100%' }}
+            >
+              {loading ? <div className="spinner"></div> : 'Registrar pago'}
+            </button>
             </div>
           </div>
         ) : (

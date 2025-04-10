@@ -6,7 +6,6 @@ const sendMail = async (to, subject, text) => {
         from: `"Medina Barber" <${process.env.EMAIL_USER}>`,
         to: to,
         subject: subject,
-        text: text,
         html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">

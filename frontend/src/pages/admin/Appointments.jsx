@@ -86,9 +86,10 @@ const AdminAppointments = () => {
     const token = localStorage.getItem("token");
     
     try {
+      // Cambiamos la ruta para que coincida con el backend
       const response = await axios.put(
-        `/api/admin/appointments/${appointmentId}/confirm`, 
-        { confirmado: isConfirmed },
+        `/api/agendar/confirm/${appointmentId}`, 
+        { confirmed: isConfirmed }, // Asegúrate de que el nombre del campo sea correcto
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -104,7 +105,11 @@ const AdminAppointments = () => {
       }
     } catch (error) {
       console.error('Error al actualizar cita:', error);
-      alert("Error al actualizar cita");
+      // Mostrar más detalles del error
+      if (error.response) {
+        console.error('Respuesta del servidor:', error.response.data);
+      }
+      alert("Error al actualizar cita. Consulta la consola para más detalles.");
     }
   };
   
@@ -232,7 +237,7 @@ const AdminAppointments = () => {
                   }>
                     <td>{appointment.clientName}</td>
                     <td>{appointment.service}</td>
-                    <td>{formatDate(appointment.date)}</td>
+                    <td>{formatDate(appointment.date.slice(5,8)+appointment.date.slice(8, 10)+"-"+appointment.date.slice(0, 4))}</td>
                     <td>{appointment.time}</td>
                     <td>
                       <div className="notes-cell">

@@ -57,9 +57,11 @@ function CalendarioCitas() {
             Authorization: `Bearer ${token}`
           }
         });
+    
         
         if (response.data.success) {
           setAllAppointments(response.data.appointments);
+          // console.log("Citas cargadas:", response.data.appointments);
         }
       } catch (error) {
         console.error('Error cargando citas:', error);
@@ -83,7 +85,7 @@ function CalendarioCitas() {
     endOfWeek.setDate(endOfWeek.getDate() + 6); // Domingo
     
     return allAppointments.filter(appointment => {
-      const appDate = new Date(appointment.date);
+      const appDate = new Date(appointment.date.slice(5,8)+appointment.date.slice(8, 10)+"-"+appointment.date.slice(0, 4));
       return appDate >= startOfWeek && appDate <= endOfWeek;
     });
   };
@@ -479,7 +481,7 @@ function CalendarioCitas() {
                   <div className="day-appointments">
                     {currentWeekAppointments
                       .filter(appointment => {
-                        const appointmentDate = new Date(appointment.date);
+                        const appointmentDate = new Date(appointment.date.slice(5,8)+appointment.date.slice(8, 10)+"-"+appointment.date.slice(0, 4));
                         return (
                           appointmentDate.getDate() === day.day &&
                           appointmentDate.getMonth() === currentDate.getMonth() &&
@@ -557,7 +559,7 @@ function CalendarioCitas() {
                     </span>
                   </div>
                   <div className="appointment-details">
-                    <span>{formatDate(appointment.date)}</span>
+                    <span>{formatDate(appointment.date.slice(5,8)+appointment.date.slice(8, 10)+"-"+appointment.date.slice(0, 4))}</span>
                     <span>{appointment.time}</span>
                     <span>{appointment.service}</span>
                   </div>
@@ -616,7 +618,7 @@ function CalendarioCitas() {
                         <div className="day-appointments">
                           {userAppointments
                             .filter(appointment => {
-                              const appointmentDate = new Date(appointment.date);
+                              const appointmentDate = new Date(appointment.date.slice(5,8)+appointment.date.slice(8, 10)+"-"+appointment.date.slice(0, 4));
                               return (
                                 appointmentDate.getDate() === day.day &&
                                 appointmentDate.getMonth() === currentDate.getMonth() &&

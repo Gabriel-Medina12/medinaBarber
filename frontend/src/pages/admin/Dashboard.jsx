@@ -155,7 +155,7 @@ const AdminDashboard = () => {
                     <tr key={appointment.id}>
                       <td>{appointment.clientName}</td>
                       <td>{appointment.service}</td>
-                      <td>{new Date(appointment.date).toLocaleDateString()}</td>
+                      <td>{new Date(appointment.date.slice(5,8)+appointment.date.slice(8, 10)+"-"+appointment.date.slice(0, 4)).toLocaleDateString()}</td>
                       <td>{appointment.time}</td>
                       <td>
                         <span className={`status-badge ${appointment.confirmed ? 'confirmed' : 'pending'}`}>

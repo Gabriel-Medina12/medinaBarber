@@ -11,6 +11,7 @@
   --font-family:"Roboto", sans-serif;
   --height-of-loader: 4px;
   --loader-color: #778DA9;
+  --footer-height: 80px;
 }
 body{
   display: flex;
@@ -169,7 +170,7 @@ body{
   right: 0;
   height: 100vh;
   width: 100vw;
-  background-color: var(--grisOscuro);
+  background-color: var(--azulOsucuroClaro);
   flex-direction: column;
   justify-content: center;
   transform: translateX(100%);
@@ -1032,6 +1033,9 @@ body{
   font-size: 35px;
   font-weight: bolder;
 }
+.siguenos-home{
+  display: none;
+}
 
 .enlace-ig {
   font-size: 20px;
@@ -1437,11 +1441,15 @@ body{
 }
 
 .appointment-modal {
-  background-color: var(--blanco);
-  border-radius: 8px;
-  width: 500px;
-  max-width: 90%;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {
@@ -2108,6 +2116,7 @@ body{
   margin: 0 auto;
   padding: 20px;
   font-family: Arial, sans-serif;
+  height: 100vh;
 }
 
 .profile-header {
@@ -3856,6 +3865,15 @@ body{
   .users-grid {
     max-height: 300px;
   }
+  .admin-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  .appointments-container {
+    padding: 10px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -3967,13 +3985,14 @@ body{
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
   .appointment-modal {
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
+    width: 95%;
+    margin: 10px auto;
+    padding: 15px;
   }
   
-  .summary-item {
-    flex-direction: column;
+  .summary-item,
+  .pago-movil-item {
+    flex-wrap: wrap;
   }
   
   .summary-item svg {
@@ -3995,6 +4014,161 @@ body{
   
   .appointment-status {
     align-self: flex-start;
+  }
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .admin-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .search-container {
+    width: 100%;
+  }
+  
+  .search-input {
+    width: 100%;
+  }
+  
+  .refresh-button {
+    width: 100%;
+  }
+  
+  /* Estilos para vista de tarjetas en móvil */
+  .appointment-cards-view {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .modal-header h3 {
+    font-size: 1.2rem;
+    line-height: 1.4;
+  }
+  .appointment-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #ccc;
+  }
+  
+  .appointment-card.confirmed {
+    border-left-color: #28a745;
+  }
+  
+  .appointment-card.pending {
+    border-left-color: #ffc107;
+  }
+  
+  .appointment-card.paid {
+    border-left-color: #007bff;
+  }
+  
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .client-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  
+  .card-content {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .card-item {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .card-label {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 3px;
+  }
+  
+  .card-value {
+    font-size: 0.95rem;
+  }
+  
+  .card-notes {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+  }
+  
+  .card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+  }
+  
+  /* Mejoras para la vista de tabla en dispositivos pequeños */
+  .admin-table th,
+  .admin-table td {
+    padding: 10px 8px;
+  }
+  
+  .notes-cell {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* Botón para cambiar entre vista de tabla y tarjetas */
+  .view-toggle-button {
+    background-color: var(--azulOscuro);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  
+  .view-toggle-button:hover {
+    background-color: var(--azulOsucuroClaro);
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+  }
+  .form-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .form-actions button {
+    width: 100%;
+    margin: 5px 0;
+  }
+  .confirmation-step {
+    grid-template-columns: 1fr;
+  }
+  .payment-proof-preview {
+    max-width: 100%;
+    height: auto;
   }
 }
 @media (max-width: 576px) {
@@ -4030,12 +4204,6 @@ body{
   .admin-content {
     padding: 15px;
   }
-  
-  .admin-table th,
-  .admin-table td {
-    padding: 8px;
-  }
-  
   .action-buttons {
     flex-direction: column;
     gap: 5px;
@@ -4066,5 +4234,40 @@ body{
   
   .appointment-summary {
     padding: 10px;
+  }
+  .card-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .status-badges {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .action-buttons {
+    flex-direction: row;
+  }
+  
+  .admin-table th:nth-child(5),
+  .admin-table td:nth-child(5) {
+    display: none;
+  }
+  .appointment-modal {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .payment-selection {
+    flex-direction: column;
+  }
+
+  .payment-option {
+    width: 100%;
+  }
+
+  .file-upload-area {
+    padding: 15px;
   }
 }

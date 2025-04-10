@@ -27,7 +27,7 @@ const NavBar = () => {
       <div className="desktop-menu">
         <a href="/" className="nav">Inicio</a>
         <a href="/#servicios" className="nav">Servicios</a>
-        <a href="/#siguenos" className="nav">Síguenos</a>
+        <a href="/#siguenos" className="nav siguenos-home">Síguenos</a>
         <Link to="/pages/contacto" className="nav">Contacto</Link>
         <Link to="/pages/agendar" className="agendarCita">Agendar Cita</Link>
       </div>

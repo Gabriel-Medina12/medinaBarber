@@ -1,25 +1,30 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
+// Eliminar espacios en la contraseña si existen
+const emailPass = process.env.EMAIL_PASS.replace(/\s+/g, '');
+
+// console.log('Configurando transporte de correo con:');
+// console.log('- Servicio:', process.env.EMAIL_SERVICE);
+// console.log('- Usuario:', process.env.EMAIL_USER);
+// console.log('- Contraseña (longitud):', emailPass.length);
+
 const transport = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    secure: true, // true for 465, false for otros puertos
+    service: process.env.EMAIL_SERVICE,
     auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
+        pass: emailPass
     },
-    tls: {
-        rejectUnauthorized: false // Solo para desarrollo, quitar en producción
-    }
+    debug: true, // Habilitar logs de depuración
+    logger: true // Registrar información sobre el transporte
 });
 
-// Verificar conexión al iniciar
-transport.verify((error, success) => {
+// Verificar la configuración
+transport.verify(function(error, success) {
     if (error) {
-        console.error('Error configurando el transporte de correo:', error);
+        console.error('Error en la configuración del transporte de correo:', error);
     } else {
-        console.log('Servidor de correo configurado correctamente');
+        console.log('Servidor listo para enviar correos');
     }
 });
 

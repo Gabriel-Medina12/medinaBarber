@@ -88,7 +88,7 @@ const Home = () => {
 
             <div className="bento-item">
               <div className="bento-image-container">
-                <img src="./src/assets/img/medinaBarber1.jpeg" alt="Cortes sencillos" className="bento-image" />
+                <img src="./src/assets/img/imagen4.webp" alt="Paquetes de barbería" className="bento-image" />
                 <div className="bento-overlay">
                   <h3 className="bento-category">CORTES SENCILLOS</h3>
                 </div>
@@ -103,7 +103,7 @@ const Home = () => {
 
             <div className="bento-item">
               <div className="bento-image-container">
-                <img src="./src/assets/img/medinaBarber3.jpeg" alt="Paquetes de barbería" className="bento-image" />
+                <img src="./src/assets/img/imagen5.webp" alt="Paquetes de barbería" className="bento-image" />
                 <div className="bento-overlay">
                   <h3 className="bento-category">PAQUETES</h3>
                 </div>
@@ -144,7 +144,7 @@ const Home = () => {
         </div>
       </section>
 
-      <div>
+      <div className="siguenos-home">
         <section id="siguenos" className="titulos">
           <h2>Síguenos</h2>
           <hr />

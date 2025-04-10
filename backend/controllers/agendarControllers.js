@@ -157,6 +157,9 @@ router.post('/', upload.single('paymentProof'), async (req, res) => {
 // Confirmar una cita (solo para administradores)
 router.put('/confirm/:id', verifyToken, async (req, res) => {
   try {
+    console.log('Intentando confirmar cita ID:', req.params.id);
+    console.log('Datos recibidos:', req.body);
+    
     // Verificar si el usuario es administrador
     const user = await db.Users.findByPk(req.userId);
     
@@ -178,7 +181,8 @@ router.put('/confirm/:id', verifyToken, async (req, res) => {
     }
     
     // Actualizar estado de la cita
-    cita.confirmed = true;
+    // Asegúrate de que el campo en la base de datos se llama 'confirmed'
+    cita.confirmed = req.body.confirmed !== undefined ? req.body.confirmed : true;
     await cita.save();
     
     // Enviar correo al cliente
@@ -201,14 +205,8 @@ router.put('/confirm/:id', verifyToken, async (req, res) => {
         Equipo de Medina Barber
       `;
       
-      await sendMail(
-        cita.email, 
-        '✅ Cita Confirmada - Medina Barber', 
-        confirmationMessage
-      );
-      
-      console.log(`Correo de confirmación enviado a ${cita.email}`);
-      
+      await sendMail(cita.email, 'Cita Confirmada - Medina Barber', confirmationMessage);
+      console.log('Correo de confirmación enviado a:', cita.email);
     } catch (emailError) {
       console.error('Error al enviar correo de confirmación:', emailError);
       // No detenemos el proceso aunque falle el correo
@@ -220,10 +218,11 @@ router.put('/confirm/:id', verifyToken, async (req, res) => {
       appointment: cita
     });
   } catch (error) {
-    console.error('Error al confirmar cita:', error);
+    console.error('Error detallado al confirmar cita:', error);
     res.status(500).json({
       success: false,
-      message: 'Error al confirmar la cita'
+      message: 'Error al confirmar la cita',
+      error: error.message
     });
   }
 });
