@@ -58,13 +58,13 @@ const AdminSidebar = () => {
           <span>Cortes</span>
         </Link>
         
-        <Link 
+        {/* <Link 
           to="/admin/settings" 
           className={`sidebar-link ${currentPath === "/admin/settings" ? "active" : ""}`}
         >
           <Settings size={20} />
           <span>Configuración</span>
-        </Link>
+        </Link> */}
       </nav>
       
       <div className="sidebar-footer">

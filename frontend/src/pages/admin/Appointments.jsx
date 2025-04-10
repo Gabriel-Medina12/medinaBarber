@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminSidebar from "../../components/AdminSidebar";
-import { Search, Calendar, Check, X, DollarSign, Filter } from "lucide-react";
+import { Search, Calendar, Check, X, DollarSign, Filter, Trash2 } from "lucide-react";
 
 const AdminAppointments = () => {
   document.title = 'Gestión de Citas | Medina Barber';
@@ -12,6 +12,7 @@ const AdminAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState("all"); // all, pending, confirmed, paid
+  const [cancelingAppointment, setCancelingAppointment] = useState(false);
   
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -170,6 +171,33 @@ const AdminAppointments = () => {
     }
   };
   
+  const handleCancelAppointment = async (appointmentId) => {
+    if (!window.confirm("¿Estás seguro de que deseas cancelar esta cita? Se notificará al cliente por correo electrónico.")) {
+      return;
+    }
+    
+    setCancelingAppointment(true);
+    const token = localStorage.getItem("token");
+    
+    try {
+      const response = await axios.delete(
+        `/api/agendar/admin/cancel/${appointmentId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      if (response.data.success) {
+        // Eliminar la cita de la lista
+        setAppointments(appointments.filter(appointment => appointment.id !== appointmentId));
+        alert("Cita cancelada correctamente. Se ha enviado un correo al cliente.");
+      }
+    } catch (error) {
+      console.error('Error al cancelar cita:', error);
+      alert("Error al cancelar la cita. Consulta la consola para más detalles.");
+    } finally {
+      setCancelingAppointment(false);
+    }
+  };
+  
   if (loading) {
     return (
       <div className="admin-layout">
@@ -254,6 +282,11 @@ const AdminAppointments = () => {
                             {appointment.paid ? 'Pagada' : 'No pagada'}
                           </span>
                         )}
+                        {appointment.paymentMethod && appointment.paymentMethod !== 'efectivo' && (
+                          <span className="status-badge payment-method">
+                            {appointment.paymentMethod === 'tarjeta' ? 'Tarjeta' : 'Pago Móvil'}
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td>
@@ -275,6 +308,15 @@ const AdminAppointments = () => {
                             <DollarSign size={16} />
                           </button>
                         )}
+                        
+                        <button 
+                          className="action-button delete"
+                          onClick={() => handleCancelAppointment(appointment.id)}
+                          title="Cancelar cita"
+                          disabled={cancelingAppointment}
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </td>
                   </tr>

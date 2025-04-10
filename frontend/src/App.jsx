@@ -18,7 +18,7 @@ import AdminDashboard from "./pages/admin/Dashboard.jsx";
 import AdminUsers from "./pages/admin/Users.jsx";
 import AdminAppointments from "./pages/admin/Appointments.jsx";
 import AdminHaircuts from "./pages/admin/cortes.jsx";
-import AdminSettings from "./pages/admin/settings.jsx";
+// import AdminSettings from "./pages/admin/settings.jsx";
 
 import "./app.css";
 
@@ -145,14 +145,14 @@ function App() {
                 </AdminRoute>
               }
             />
-            <Route
+            {/* <Route
               path="/admin/settings"
               element={
                 <AdminRoute>
                   <AdminSettings />
                 </AdminRoute>
               }
-            />
+            /> */}
             
             {/* Ruta para manejar páginas no encontradas */}
             <Route path="*" element={<Navigate to="/" />} />

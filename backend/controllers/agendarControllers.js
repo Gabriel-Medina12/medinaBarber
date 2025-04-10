@@ -309,61 +309,76 @@ router.get('/available-slots', async (req, res) => {
   }
 });
 
-// Cancelar una cita
-router.delete('/:id', verifyToken, async (req, res) => {
+// Cancelar una cita (para administradores)
+router.delete('/admin/cancel/:id', verifyToken, async (req, res) => {
   try {
     const citaId = req.params.id;
-    const userId = req.userId;
     
-    const cita = await db.Citas.findOne({
-      where: { id: citaId, userId }
-    });
+    // Verificar si el usuario es administrador
+    const user = await db.Users.findByPk(req.userId);
+    
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'No tienes permisos para realizar esta acción'
+      });
+    }
+    
+    // Buscar la cita
+    const cita = await db.Citas.findByPk(citaId);
     
     if (!cita) {
       return res.status(404).json({ 
         success: false, 
-        message: 'Cita no encontrada o no tienes permiso para cancelarla' 
+        message: 'Cita no encontrada' 
       });
     }
     
-    // Verificar si la cita es cancelable (por ejemplo, con 24h de antelación)
-    const appointmentDate = new Date(`${cita.date}T${cita.time}`);
-    const now = new Date();
-    const hoursUntilAppointment = (appointmentDate - now) / (1000 * 60 * 60);
-    
-    if (hoursUntilAppointment < 24) {
-      return res.status(400).json({
-        success: false,
-        message: 'Las citas deben cancelarse con al menos 24 horas de anticipación'
-      });
-    }
-    
-    // Enviar email de cancelación
-    const cancelMessage = `
+    // Preparar mensaje de cancelación según el método de pago
+    let cancelMessage = `
       Hola ${cita.clientName},
       
-      Tu cita para el ${formatDateString(date)} a las ${cita.time} ha sido cancelada correctamente.
+      Tu cita para el ${formatDateString(cita.date)} a las ${cita.time} ha sido cancelada por el administrador.
       
-      Esperamos verte pronto en Medina Barber.
+      Detalles de la cita cancelada:
+      - Servicio: ${cita.service}
+      - Fecha: ${formatDateString(cita.date)}
+      - Hora: ${cita.time}
+    `;
+    
+    // Añadir mensaje específico para pagos con tarjeta o pago móvil
+    if (cita.paymentMethod === 'tarjeta' || cita.paymentMethod === 'pago_movil') {
+      cancelMessage += `
+      
+      Nuestro equipo se pondrá en contacto contigo a la brevedad para coordinar la devolución del pago realizado.
+      `;
+    }
+    
+    cancelMessage += `
+      
+      Si tienes alguna pregunta, no dudes en contactarnos.
       
       Saludos,
       Equipo de Medina Barber
     `;
     
+    // Enviar email de cancelación
     await sendMail(cita.email, 'Cita cancelada - Medina Barber', cancelMessage);
     
     // Notificar al administrador
     const adminMessage = `
-      Cita cancelada:
+      Cita cancelada por administrador:
       
       Cliente: ${cita.clientName}
       Email: ${cita.email}
       Servicio: ${cita.service}
-      Fecha: ${formatDateString(date)}
+      Fecha: ${formatDateString(cita.date)}
       Hora: ${cita.time}
+      Método de pago: ${cita.paymentMethod || 'efectivo'}
+      ${cita.referenceNumber ? `Número de referencia: ${cita.referenceNumber}` : ''}
     `;
     
-    await sendMail('medinabarber1@gmail.com', 'Cita cancelada', adminMessage);
+    await sendMail('medinabarber1@gmail.com', 'Cita cancelada por administrador', adminMessage);
     
     // Eliminar la cita
     await cita.destroy();
@@ -376,7 +391,8 @@ router.delete('/:id', verifyToken, async (req, res) => {
     console.error('Error al cancelar cita:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Error al cancelar la cita' 
+      message: 'Error al cancelar la cita',
+      error: error.message
     });
   }
 });

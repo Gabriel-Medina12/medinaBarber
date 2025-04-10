@@ -3187,6 +3187,24 @@ body{
   color: #333;
   white-space: pre-line;
 }
+.action-button.delete {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.action-button.delete:hover {
+  background-color: #c0392b;
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.status-badge.payment-method {
+  background-color: #3498db;
+  color: white;
+}
 /* ------------------------------------------------ HAIRCUTS ----------------------------------------------- */
 
 .haircuts-container {
