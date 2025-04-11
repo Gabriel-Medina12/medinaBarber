@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import img1 from '../assets/img/LogoMedinaBarber.PNG';
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,7 +13,7 @@ const NavBar = () => {
     <nav className="navBar">
       <div className="logo-MB">
         <Link to="/">
-          <img src="./src/assets/img/LogoMedinaBarber.PNG" alt="Logo Medina Barber" />
+          <img src={img1} alt="Logo Medina Barber" />
         </Link>
       </div>
       
