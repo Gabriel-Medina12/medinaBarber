@@ -44,10 +44,10 @@ const NavBar = () => {
             Servicios
             <hr className="menu-divider" />
           </a>
-          <a href="/#siguenos" className="nav mobile-nav-item" onClick={() => setIsOpen(false)}>
+          {/* <a href="/#siguenos" className="nav mobile-nav-item" onClick={() => setIsOpen(false)}>
             Síguenos
             <hr className="menu-divider" />
-          </a>
+          </a> */}
           <Link to="/pages/contacto" className="nav mobile-nav-item" onClick={() => setIsOpen(false)}>
             Contacto
             <hr className="menu-divider" />
