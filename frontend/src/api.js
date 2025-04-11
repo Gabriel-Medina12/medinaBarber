@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api', // Base URL para todas las peticiones
+  baseURL: 'https://medinabarber.onrender.com/api', // Base URL para todas las peticiones
   headers: {
     'Content-Type': 'application/json'
   }
