@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+
 import CalendarioCitas from "../components/CalendarioCitas";
 import { useNavigate } from "react-router-dom";
+import api from "../api";
 
 function Agendar() {
   document.title = 'Agendar Cita | Medina Barber';
@@ -28,7 +29,7 @@ function Agendar() {
     // Cargar configuración de servicios y horarios
     const fetchSettings = async () => {
       try {
-        const response = await axios.get('/api/agendar/settings', {
+        const response = await api.get('/agendar/settings', {
           headers: {
             Authorization: `Bearer ${token}`
           }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../../api";
 import AdminSidebar from "../../components/AdminSidebar";
 import { Search, Calendar, Check, X, DollarSign, Filter, Trash2 } from "lucide-react";
 
@@ -25,7 +25,7 @@ const AdminAppointments = () => {
       try {
         // console.log('Solicitando citas al servidor...');
         
-        const response = await axios.get('/api/admin/appointments', {
+        const response = await api.get('/admin/appointments', {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -88,8 +88,8 @@ const AdminAppointments = () => {
     
     try {
       // Cambiamos la ruta para que coincida con el backend
-      const response = await axios.put(
-        `/api/agendar/confirm/${appointmentId}`, 
+      const response = await api.put(
+        `/agendar/confirm/${appointmentId}`, 
         { confirmed: isConfirmed }, // Asegúrate de que el nombre del campo sea correcto
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -118,8 +118,8 @@ const AdminAppointments = () => {
     const token = localStorage.getItem("token");
     
     try {
-      const response = await axios.put(
-        `/api/admin/appointments/${appointmentId}/confirm`, 
+      const response = await api.put(
+        `/admin/appointments/${appointmentId}/confirm`, 
         { pagado: isPaid },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -155,7 +155,7 @@ const AdminAppointments = () => {
     const token = localStorage.getItem("token");
     
     try {
-      const response = await axios.get('/api/admin/appointments', {
+      const response = await api.get('/api/admin/appointments', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -180,8 +180,8 @@ const AdminAppointments = () => {
     const token = localStorage.getItem("token");
     
     try {
-      const response = await axios.delete(
-        `/api/agendar/admin/cancel/${appointmentId}`,
+      const response = await api.delete(
+        `/agendar/admin/cancel/${appointmentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       

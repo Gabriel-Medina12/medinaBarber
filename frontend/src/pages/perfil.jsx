@@ -76,7 +76,7 @@ const Perfil = () => {
               user.avatar 
                 ? user.avatar.startsWith('http') 
                   ? user.avatar 
-                  : `http://localhost:3000${user.avatar}`
+                  : `https://medinabarber.onrender.com${user.avatar}`
                 : "/placeholder.svg?height=100&width=100"
             }
             alt="Avatar"
@@ -112,7 +112,7 @@ const Perfil = () => {
           cortes.map((corte, index) => (
             <div key={corte.id} className="grid-item">
               <img 
-                src={`http://localhost:3000${corte.imagenUrl}`} 
+                src={`https://medinabarber.onrender.com${corte.imagenUrl}`} 
                 alt={`Corte ${index + 1}`} 
               />
               {corte.descripcion && (

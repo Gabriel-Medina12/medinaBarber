@@ -2,6 +2,8 @@
 import { User, Scissors, Clock, Calendar, Mail, CreditCard, AlertCircle, Smartphone, Upload, FileText, Check, Receipt} from "lucide-react"
 import { useState, useRef, useEffect } from "react" // Añadir useEffect aquí
 import axios from "axios";
+import api from "../api";
+
 
 function AppointmentModal({
   selectedDay,
@@ -288,7 +290,7 @@ function AppointmentModal({
       const token = localStorage.getItem("token");
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-      const response = await axios.post("/api/agendar", formData, {
+      const response = await api.post("/agendar", formData, {
         headers: {
           ...headers,
           "Content-Type": "multipart/form-data",

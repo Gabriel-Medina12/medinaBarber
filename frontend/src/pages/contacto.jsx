@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import img1 from '../assets/img/Logo Medina Barber.png';
-
-axios.defaults.baseURL = 'http://localhost:3000';
+import api from "../api";
 
 const Contacto = () => {
     document.title = 'Contacto | Medina Barber';
@@ -31,7 +29,7 @@ const Contacto = () => {
         setMessage({ text: '', type: '' });
         
         try {
-            const response = await axios.post('/api/contacto', formData, {
+            const response = await api.post('/contacto', formData, {
                 headers: {
                     'Content-Type': 'application/json'
                 }

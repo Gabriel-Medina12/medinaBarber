@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react"
 import AppointmentModal from "./AppointmentModal"
-import axios from "axios"
+import api from "../api"
+api
 
 function CalendarioCitas() {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -52,7 +53,7 @@ function CalendarioCitas() {
     const loadWeeklyAppointments = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get('/api/agendar/all', {
+        const response = await api.get('/agendar/all', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -106,7 +107,7 @@ function CalendarioCitas() {
   }, []);
   const fetchUserData = async (token) => {
     try {
-      const response = await axios.get('/api/users/profile', {
+      const response = await api.get('/users/profile', {
         headers: { 
           Authorization: `Bearer ${token}`
         }
@@ -132,7 +133,7 @@ function CalendarioCitas() {
         return;
       }
       
-      const response = await axios.get('/api/agendar/user', {
+      const response = await api.get('/agendar/user', {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -157,7 +158,7 @@ function CalendarioCitas() {
 
   const fetchSettings = async () => {
     try {
-      const response = await axios.get('/api/agendar/settings');
+      const response = await api.get('/agendar/settings');
       
       if (response.data.success) {
         if (response.data.settings.services) {
@@ -379,7 +380,7 @@ function CalendarioCitas() {
       }
       
       // Enviar al backend
-      const response = await axios.post(
+      const response = await api.post(
         '/api/agendar', 
         formData instanceof FormData ? formData : formData,
         { headers }

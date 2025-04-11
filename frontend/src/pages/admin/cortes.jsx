@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+
 import AdminSidebar from "../../components/AdminSidebar";
 import { Search, Scissors, Upload, User, Calendar, X, Image, Trash2 } from "lucide-react";
+import api from "../../api";
 
 const AdminHaircuts = () => {
   document.title = 'Gestión de Cortes | Medina Barber';
@@ -27,7 +28,7 @@ const AdminHaircuts = () => {
     
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('/api/admin/users', {
+        const response = await axioapi.get('/admin/users', {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -71,7 +72,7 @@ const AdminHaircuts = () => {
     const token = localStorage.getItem("token");
     
     try {
-      const response = await axios.get(`/api/admin/users/${user.id}/cortes`, {
+      const response = await api.get(`/admin/users/${user.id}/cortes`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -144,8 +145,8 @@ const AdminHaircuts = () => {
     formData.append('descripcion', uploadDescription);
     
     try {
-      const response = await axios.post(
-        `/api/admin/users/${selectedUser.id}/cortes`,
+      const response = await api.post(
+        `/admin/users/${selectedUser.id}/cortes`,
         formData,
         {
           headers: { 
@@ -176,7 +177,7 @@ const AdminHaircuts = () => {
     const token = localStorage.getItem("token");
     
     try {
-      const response = await axios.delete(
+      const response = await api.delete(
         `/api/admin/cortes/${corteId}`,
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -261,7 +262,7 @@ const AdminHaircuts = () => {
                   >
                     <div className="user-avatar">
                       <img 
-                        src={user.avatar ? `http://localhost:3000${user.avatar}` : "/placeholder.svg?height=60&width=60"} 
+                        src={user.avatar ? `https://medinabarber.onrender.com${user.avatar}` : "/placeholder.svg?height=60&width=60"} 
                         alt={user.fullName} 
                       />
                     </div>
@@ -311,7 +312,7 @@ const AdminHaircuts = () => {
                     <div key={corte.id} className="corte-card">
                       <div className="corte-image">
                         <img 
-                          src={`http://localhost:3000${corte.imagenUrl}`} 
+                          src={`https://medinabarber.onrender.com${corte.imagenUrl}`} 
                           alt={`Corte de ${selectedUser.fullName}`} 
                         />
                         <button 

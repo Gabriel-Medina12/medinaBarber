@@ -31,7 +31,7 @@ const EditPerfil = () => {
         });
         
         if (user.avatar) {
-          setAvatarPreview(`http://localhost:3000${user.avatar}`);
+          setAvatarPreview(`https://medinabarber.onrender.com${user.avatar}`);
         }
         
       } catch (error) {

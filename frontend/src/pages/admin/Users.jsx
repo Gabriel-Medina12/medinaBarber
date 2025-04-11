@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../../api";
 import AdminSidebar from "../../components/AdminSidebar";
 import { Search, Edit, Trash2, UserPlus, Check, X } from "lucide-react";
 
@@ -26,7 +26,7 @@ const AdminUsers = () => {
     
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('/api/admin/users', {
+        const response = await api.get('/admin/users', {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -91,7 +91,7 @@ const AdminUsers = () => {
     const token = localStorage.getItem("token");
     
     try {
-      const response = await axios.delete(`/api/admin/users/${userToDelete.id}`, {
+      const response = await api.delete(`/admin/users/${userToDelete.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -113,7 +113,7 @@ const AdminUsers = () => {
     const token = localStorage.getItem("token");
     
     try {
-      const response = await axios.put(`/api/admin/users/${userToEdit.id}/role`, 
+      const response = await api.put(`/admin/users/${userToEdit.id}/role`, 
         { role: newRole },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -186,7 +186,7 @@ const AdminUsers = () => {
                     <td>
                       <div className="user-avatar">
                         <img 
-                          src={user.avatar ? `http://localhost:3000${user.avatar}` : "/placeholder.svg?height=40&width=40"} 
+                          src={user.avatar ? `https://medinabarber.onrender.com${user.avatar}` : "/placeholder.svg?height=40&width=40"} 
                           alt={user.fullName} 
                         />
                       </div>
