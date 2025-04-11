@@ -381,7 +381,7 @@ function CalendarioCitas() {
       
       // Enviar al backend
       const response = await api.post(
-        '/api/agendar', 
+        '/agendar', 
         formData instanceof FormData ? formData : formData,
         { headers }
       );
