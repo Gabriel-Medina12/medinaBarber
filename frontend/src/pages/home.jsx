@@ -8,6 +8,13 @@ import ScrollTrigger from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(useGSAP, ScrollTrigger)
 
+import Img1 from "../assets/img/medinaBarber2.jpeg";
+import Img2 from "../assets/img/medinaBarber1.jpeg";
+import Img3 from "../assets/img/medinaBarber3.jpeg";
+import Img4 from "../assets/img/imagen4.webp";
+// ./src/assets/img/imagen4.webp
+import Img5 from "../assets/img/imagen5.webp";
+
 const Home = () => {
   const gridRef = useRef();
   const navigate = useNavigate();
@@ -60,9 +67,9 @@ const Home = () => {
     <>
       <NavBar />
       <div className="imgs-fondo-home">
-        <img src="./src/assets/img/medinaBarber2.jpeg" alt="Barber shop interior" />
-        <img src="./src/assets/img/medinaBarber1.jpeg" alt="Barber shop service" />
-        <img src="./src/assets/img/medinaBarber3.jpeg" alt="Barber shop styling" />
+        <img src={Img1} alt="Barber shop interior" />
+        <img src={Img2} alt="Barber shop service" />
+        <img src={Img3} alt="Barber shop styling" />
       </div>
       <section className="services-section" id="servicios">
         <div className="services-container">
@@ -72,7 +79,7 @@ const Home = () => {
           <div className="bento-grid" ref={gridRef}>
             <div className="bento-item">
               <div className="bento-image-container">
-                <img src="./src/assets/img/medinaBarber2.jpeg" alt="Servicios de barba" className="bento-image" />
+                <img src={Img1} alt="Servicios de barba" className="bento-image" />
                 <div className="bento-overlay">
                   <h3 className="bento-category">BARBA</h3>
                 </div>
@@ -88,7 +95,7 @@ const Home = () => {
 
             <div className="bento-item">
               <div className="bento-image-container">
-                <img src="./src/assets/img/imagen4.webp" alt="Paquetes de barbería" className="bento-image" />
+                <img src={Img4} alt="Paquetes de barbería" className="bento-image" />
                 <div className="bento-overlay">
                   <h3 className="bento-category">CORTES SENCILLOS</h3>
                 </div>
@@ -103,7 +110,7 @@ const Home = () => {
 
             <div className="bento-item">
               <div className="bento-image-container">
-                <img src="./src/assets/img/imagen5.webp" alt="Paquetes de barbería" className="bento-image" />
+                <img src={Img5} alt="Paquetes de barbería" className="bento-image" />
                 <div className="bento-overlay">
                   <h3 className="bento-category">PAQUETES</h3>
                 </div>
