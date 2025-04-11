@@ -18,112 +18,117 @@ const verificationCodes = {};
 
 router.post('/register', async (req, res) => {
   try {
-      const { email, fullName, userName, password, confirmPassword } = req.body;
-      if (password !== confirmPassword) {
-          return res.status(400).json({ message: 'Las contraseñas no coinciden' });
-      }
-      
-      // Verificar si el usuario ya existe
-      const existingUser = await Users.findOne({ where: { email } });
-      if (existingUser) {
-          return res.status(400).json({ message: 'El usuario ya existe' });
-      }
-      
-      // Generar código de verificación
-      const verificationCode = generateVerificationCode();
-      
-      // Almacenar temporalmente los datos del usuario y el código
-      verificationCodes[email] = {
-          verificationCode,
-          userData: {
-              email,
-              fullName,
-              userName,
-              password,
-              role: 'user'
-          },
-          expiresAt: Date.now() + 15 * 60 * 1000 // 15 minutos de expiración
-      };
-      
-      // Enviar correo con código de verificación
-      const mailResult = await sendMail(
-          email,
-          'Código de verificación - Medina Barber',
-          `Hola ${fullName},\n\nTu código de verificación para Medina Barber es: ${verificationCode}\n\nEste código expirará en 15 minutos.\n\nSaludos,\nEquipo de Medina Barber`
-      );
-      
-      if (!mailResult.success) {
-          return res.status(500).json({ message: 'Error al enviar el correo de verificación' });
-      }
-      
-      res.status(200).json({
-          message: 'Se ha enviado un código de verificación a tu correo electrónico',
-          requiresVerification: true,
-          email: email
-      });
-      
+    const { email, fullName, userName, password, confirmPassword } = req.body;
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: 'Las contraseñas no coinciden' });
+    }
+    
+    const existingUser = await Users.findOne({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ message: 'El usuario ya existe' });
+    }
+    
+    const verificationCode = generateVerificationCode();
+    
+    // Asegúrate de que esta ruta sea accesible públicamente
+    const defaultAvatar = '/uploads/avatars/Logo Medina Barber.jpg'; 
+    
+    verificationCodes[email] = {
+      verificationCode,
+      userData: {
+        email,
+        fullName,
+        userName,
+        password,
+        role: 'user',
+        avatar: defaultAvatar
+      },
+      expiresAt: Date.now() + 15 * 60 * 1000
+    };
+    
+    const mailResult = await sendMail(
+      email,
+      'Código de verificación - Medina Barber',
+      `Hola ${fullName},\n\nTu código de verificación para Medina Barber es: ${verificationCode}\n\nEste código expirará en 15 minutos.\n\nSaludos,\nEquipo de Medina Barber`
+    );
+    
+    if (!mailResult.success) {
+      return res.status(500).json({ message: 'Error al enviar el correo de verificación' });
+    }
+    
+    res.status(200).json({
+      message: 'Se ha enviado un código de verificación a tu correo electrónico',
+      requiresVerification: true,
+      email: email
+    });
+    
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Error en el servidor' });
+    console.error(error);
+    res.status(500).json({ message: 'Error en el servidor' });
   }
 });
 
+// Cambia esto en tu userController.js
 router.post('/verify-email', async (req, res) => {
   try {
-      const { email, verificationCode } = req.body;
-      
-      // Verificar si existe un código para este email
-      if (!verificationCodes[email]) {
-          return res.status(400).json({ message: 'Código de verificación inválido o expirado' });
-      }
-      
-      // Verificar si el código coincide
-      if (verificationCodes[email].verificationCode !== verificationCode) {
-          return res.status(400).json({ message: 'Código de verificación incorrecto' });
-      }
-      
-      // Verificar si el código ha expirado
-      if (verificationCodes[email].expiresAt < Date.now()) {
-          delete verificationCodes[email];
-          return res.status(400).json({ message: 'El código de verificación ha expirado' });
-      }
-      
-      // Crear el usuario en la base de datos
-      const userData = verificationCodes[email].userData;
-      const newUser = await Users.create(userData);
-      
-      // Generar un token JWT
-      const token = jwt.sign(
-          { id: newUser.id, role: newUser.role },
-          process.env.JWT_SECRET,
-          { expiresIn: '1h' }
-      );
-      
-      // Enviar correo de bienvenida
-      await sendMail(
-          email,
-          'Bienvenido a Medina Barber',
-          `Hola ${userData.fullName},\n\n¡Bienvenido a Medina Barber! Tu cuenta ha sido verificada exitosamente.\n\nAhora puedes disfrutar de todos nuestros servicios y reservar tus citas.\n\nSaludos,\nEquipo de Medina Barber`
-      );
-      
-      // Eliminar el código de verificación
-      delete verificationCodes[email];
-      
-      res.status(201).json({
-          message: 'Usuario registrado exitosamente',
-          token,
-          user: {
-              id: newUser.id,
-              email: newUser.email,
-              fullName: newUser.fullName,
-              userName: newUser.userName,
-              role: newUser.role
-          }
+    const { email, verificationCode } = req.body;
+    
+    // Verificación del código
+    const storedCode = verificationCodes[email];
+    if (!storedCode) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'No se encontró solicitud de verificación para este email' 
       });
-      
+    }
+    
+    if (storedCode.verificationCode !== verificationCode) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Código de verificación incorrecto' 
+      });
+    }
+    
+    if (storedCode.expiresAt < Date.now()) {
+      delete verificationCodes[email];
+      return res.status(400).json({ 
+        success: false,
+        message: 'El código de verificación ha expirado' 
+      });
+    }
+    
+    // Hashear la contraseña antes de guardarla
+    const hashedPassword = await bcrypt.hash(storedCode.userData.password, 10);
+    
+    // Crear el usuario con todos los campos
+    const newUser = await Users.create({
+      email: storedCode.userData.email,
+      fullName: storedCode.userData.fullName,
+      userName: storedCode.userData.userName,
+      password: hashedPassword,
+      role: storedCode.userData.role,
+      avatar: storedCode.userData.avatar
+    });
+
+    // Limpiar el código usado
+    delete verificationCodes[email];
+    
+    res.status(201).json({
+      success: true,
+      message: '¡Cuenta verificada exitosamente! Ahora puedes iniciar sesión.',
+      // Eliminamos el token de la respuesta ya que no queremos iniciar sesión automáticamente
+      user: {
+        email: newUser.email
+      }
+    });
+    
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Error en el servidor' });
+    console.error('Error en verify-email:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error en el servidor al verificar el email',
+      error: error.message 
+    });
   }
 });
 
@@ -220,9 +225,9 @@ router.get('/profile', verifyToken, async (req, res) => {
 // Actualizar la ruta edit-profile para incluir el avatar
 router.post('/edit-profile', verifyToken, upload.single('avatar'), async (req, res) => {
   try {
-    console.log("Recibida solicitud de edición de perfil");
-    console.log("Datos recibidos:", req.body);
-    console.log("Archivo recibido:", req.file);
+    // console.log("Recibida solicitud de edición de perfil");
+    // console.log("Datos recibidos:", req.body);
+    // console.log("Archivo recibido:", req.file);
     const { fullName, userName } = req.body;
     
     // Verificar si el usuario existe
@@ -259,6 +264,8 @@ router.post('/edit-profile', verifyToken, upload.single('avatar'), async (req, r
         avatar: user.avatar
       }
     });
+    console.log("Request body:", req.body);
+    console.log("File uploaded:", req.file);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error en el servidor: ' + error.message });

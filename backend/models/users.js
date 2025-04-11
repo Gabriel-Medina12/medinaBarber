@@ -46,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
       avatar: {
         type: DataTypes.STRING,
         allowNull: true,
-        defaultValue: null
+        defaultValue: '/uploads/avatars/Logo Medina Barber.jpg'
       },
       resetPasswordToken: {
         type: DataTypes.STRING,

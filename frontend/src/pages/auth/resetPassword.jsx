@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import api from "../../api";
 
 const ResetPassword = () => {
   document.title = 'Restablecer Contraseña | Medina Barber';
@@ -18,22 +18,20 @@ const ResetPassword = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [name]: value
-    });
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validar que las contraseñas coincidan
     if (formData.password !== formData.confirmPassword) {
       setMessage("Las contraseñas no coinciden");
       return;
     }
     
-    // Validar longitud mínima
     if (formData.password.length < 6) {
       setMessage("La contraseña debe tener al menos 6 caracteres");
       return;
@@ -43,30 +41,33 @@ const ResetPassword = () => {
     setMessage("");
     
     try {
-        console.log("Enviando solicitud con token:", token);
-        const response = await axios.post(
-          `http://localhost:3000/api/users/reset-password/${token}`, 
-          { password: formData.password }
-        );
-        
-        console.log("Respuesta recibida:", response.data);
-        
-        if (response.data.success) {
-          setIsSuccess(true);
-          setMessage(response.data.message);
-          // Redirigir al login después de 3 segundos
-          setTimeout(() => {
-            navigate("/pages/auth/login");
-          }, 3000);
-        }
+      const response = await api.post(
+        `/users/reset-password/${token}`, 
+        { password: formData.password }
+      );
+      
+      setIsSuccess(true);
+      setMessage(response.data.message);
+      
+      setTimeout(() => {
+        navigate("/pages/auth/login");
+      }, 3000);
+      
     } catch (error) {
-        console.error("Error completo:", error);
-        setIsSuccess(false);
-        if (error.response?.status === 400) {
-          setIsTokenValid(false);
-        }
-        setMessage(error.response?.data?.message || "Ocurrió un error al restablecer tu contraseña");
+      setIsSuccess(false);
+      const status = error.response?.status;
+      
+      if (status === 400) {
+        setIsTokenValid(false);
+        setMessage("El enlace es inválido o ha expirado");
+      } else {
+        const errorMessage = error.response?.data?.message 
+          || "Ocurrió un error al restablecer tu contraseña";
+        setMessage(errorMessage);
       }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

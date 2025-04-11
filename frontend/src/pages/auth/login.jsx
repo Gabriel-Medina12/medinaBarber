@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
+import api from '../../api';
+
 
 const Auth = ({ setIsAuthenticated, setIsAdmin }) => {
   document.title = 'Login | Medina Barber'
@@ -67,45 +69,26 @@ const Auth = ({ setIsAuthenticated, setIsAdmin }) => {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3000/api/users/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(loginForm)
-      });
-      const data = await response.json();
+      const response = await api.post('/users/login', loginForm);
+      const data = response.data;
       
-      if (!response.ok) {
-        setLoginMessage(data.message || 'Error al iniciar sesión');
-      } else {
-        setLoginMessage('Inicio de sesión exitoso');
-        localStorage.setItem('token', data.token);
-        
-        // Verificar si el usuario es administrador
-        const isAdmin = data.user && data.user.role === 'admin';
-        
-        // Guardar el rol en localStorage para mantenerlo entre sesiones
-        localStorage.setItem('userRole', data.user.role);
-        
-        // Actualizar el estado de autenticación
-        setIsAuthenticated(true);
-        
-        // Actualizar el estado de administrador si la función existe
-        if (typeof setIsAdmin === 'function') {
-          setIsAdmin(isAdmin);
-        }
-        
-        // Redirigir según el rol o a la página que intentaba acceder
-        if (isAdmin) {
-          navigate('/admin/dashboard');
-        } else {
-          navigate(redirectTo);
-        }
+      setLoginMessage('Inicio de sesión exitoso');
+      localStorage.setItem('token', data.token);
+      
+      const isAdmin = data.user?.role === 'admin';
+      localStorage.setItem('userRole', data.user.role);
+      setIsAuthenticated(true);
+      
+      if (typeof setIsAdmin === 'function') {
+        setIsAdmin(isAdmin);
       }
+      
+      navigate(isAdmin ? '/admin/dashboard' : redirectTo);
+      
     } catch (error) {
+      const message = error.response?.data?.message || 'Error en el inicio de sesión';
+      setLoginMessage(message);
       console.error('Error en el login:', error);
-      setLoginMessage('Error en el inicio de sesión');
     }
   };
 
@@ -127,29 +110,20 @@ const Auth = ({ setIsAuthenticated, setIsAdmin }) => {
     }
     
     try {
-      const response = await fetch('http://localhost:3000/api/users/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(registerForm)
-      });
-      const data = await response.json();
-      
-      if (!response.ok) {
-        setRegisterMessage(data.message || 'Error al registrarse');
+      const response = await api.post('/users/register', registerForm);
+      const data = response.data;
+  
+      if (data.requiresVerification) {
+        setVerificationStep(true);
+        setVerificationEmail(data.email);
+        setRegisterMessage('Se ha enviado un código de verificación a tu correo electrónico. Verifica tu cuenta y luego inicia sesión.');
       } else {
-        if (data.requiresVerification) {
-          setVerificationStep(true);
-          setVerificationEmail(data.email);
-          setRegisterMessage('Se ha enviado un código de verificación a tu correo electrónico');
-        } else {
-          setRegisterMessage('Registro exitoso. Ahora inicia sesión para acceder a tu perfil.');
-        }
+        setRegisterMessage('Registro exitoso. Ahora inicia sesión para acceder a tu perfil.');
       }
     } catch (error) {
+      const message = error.response?.data?.message || 'Error en el registro';
+      setRegisterMessage(message);
       console.error('Error en el registro:', error);
-      setRegisterMessage('Error en el registro');
     }
   };
 
@@ -159,28 +133,21 @@ const Auth = ({ setIsAuthenticated, setIsAdmin }) => {
   };
 
   // Envío del código de verificación
+  // En tu componente Auth, modifica handleVerificationSubmit
   const handleVerificationSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3000/api/users/verify-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: verificationEmail,
-          verificationCode: verificationCode
-        })
-      });
-      const data = await response.json();
+      setRegisterMessage('Verificando código...');
       
-      if (!response.ok) {
-        setRegisterMessage(data.message || 'Error al verificar el código');
-      } else {
-        setVerificationStep(false);
-        setRegisterMessage('Verificación exitosa. Tu cuenta ha sido creada. Ahora puedes iniciar sesión.');
+      const response = await api.post('/users/verify-email', {
+        email: verificationEmail,
+        verificationCode: verificationCode.trim()
+      });
+      
+      if (response.data.success) {
+        setRegisterMessage(response.data.message);
         
-        // Limpiar el formulario de registro
+        // Limpiar los formularios
         setRegisterForm({
           email: '',
           fullName: '',
@@ -189,10 +156,29 @@ const Auth = ({ setIsAuthenticated, setIsAdmin }) => {
           confirmPassword: ''
         });
         setVerificationCode('');
+        setVerificationStep(false);
+        
+        // Mostrar mensaje de éxito y volver al formulario de login
+        setLoginMessage('¡Cuenta verificada! Ahora puedes iniciar sesión.');
+      } else {
+        setRegisterMessage(response.data.message || 'Error en la verificación');
       }
+      
     } catch (error) {
-      console.error('Error en la verificación:', error);
-      setRegisterMessage('Error en la verificación');
+      let errorMessage = 'Error en la verificación';
+      
+      if (error.response) {
+        errorMessage = error.response.data.message || 
+                     error.response.data.error || 
+                     `Error ${error.response.status}`;
+      } else if (error.request) {
+        errorMessage = 'No se recibió respuesta del servidor';
+      } else {
+        errorMessage = error.message;
+      }
+      
+      setRegisterMessage(errorMessage);
+      console.error('Error completo:', error);
     }
   };
 
@@ -355,7 +341,10 @@ const Auth = ({ setIsAuthenticated, setIsAdmin }) => {
                   <label className='code-verification'>Código de verificación *</label>
                   <p className="verification-info">
                     Hemos enviado un código de verificación a {verificationEmail}. 
-                    Por favor, revisa tu bandeja de entrada o correos no deseados e ingresa el código a continuación.
+                    Por favor, revisa tu bandeja de entrada o correos no deseados.
+                  </p>
+                  <p className="verification-next-step">
+                    Después de verificar tu correo, podrás iniciar sesión con tus credenciales.
                   </p>
                   <input
                     type="text"

@@ -1,82 +1,53 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import api from "../api";
 
 const Perfil = () => {
   document.title = 'Perfil | Medina Barber';
   const navigate = useNavigate();
   
-  // Estado para almacenar la información del usuario y manejo de carga/errores
   const [user, setUser] = useState(null);
   const [cortes, setCortes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Obtener el token del localStorage
-    const token = localStorage.getItem("token");
-    
-    if (!token) {
-      navigate("/pages/auth/login");
-      return;
-    }
-
-    // Función para obtener los datos del perfil
-    const fetchUserProfile = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/users/profile", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          }
-        });
-
-        if (!res.ok) {
-          if (res.status === 401) {
-            localStorage.removeItem("token");
-            navigate("/pages/auth/login");
-            throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
-          }
-          throw new Error("Error al obtener los datos del perfil");
+        // Verificar token antes de hacer la solicitud
+        const token = localStorage.getItem("token");
+        if (!token) {
+          navigate("/pages/auth/login");
+          return;
         }
 
-        const data = await res.json();
-        setUser(data.user);
+        // Obtener datos en paralelo
+        const [profileRes, cortesRes] = await Promise.all([
+          api.get('/users/profile'),
+          api.get('/users/my-cortes')
+        ]);
+
+        setUser(profileRes.data.user);
+        setCortes(cortesRes.data.cortes || []);
         
-        // Una vez que tenemos el usuario, obtenemos sus cortes
-        const cortesRes = await fetch("http://localhost:3000/api/users/my-cortes", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          }
-        });
-        const responseText = await cortesRes.text();
-        console.log();
-
-        if (!cortesRes.ok) {
-          const errorData = await cortesRes.json();
-          throw new Error(errorData.message || "Error al obtener los cortes");
-        }
-
-
-        let cortesData;
-  try {
-    cortesData = JSON.parse(responseText);
-  } catch (e) {
-    console.error("Error al parsear JSON:", e);
-    throw new Error("La respuesta del servidor no es un JSON válido");
-  }
-        setCortes(cortesData.cortes || []);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error completo', err);
-        setError(err.message || "Error al obtener el perfil o los cortes");
+      } catch (error) {
+        handleError(error);
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchUserProfile();
+    const handleError = (error) => {
+      if (error.response?.status === 401) {
+        localStorage.removeItem("token");
+        navigate("/pages/auth/login", {
+          state: { message: "Tu sesión ha expirado. Por favor inicia sesión nuevamente." }
+        });
+      }
+      setError(error.response?.data?.message || "Error al cargar los datos");
+    };
+
+    fetchData();
   }, [navigate]);
 
   if (loading) return (
@@ -99,13 +70,23 @@ const Perfil = () => {
     <div className="profile-container">
       <div className="profile-header">
         <div className="user-info">
-          <div className="avatar-container">
+        <div className="avatar-container">
           <img
-            src={user.avatar ? `http://localhost:3000${user.avatar}` : "/placeholder.svg?height=100&width=100"}
+            src={
+              user.avatar 
+                ? user.avatar.startsWith('http') 
+                  ? user.avatar 
+                  : `http://localhost:3000${user.avatar}`
+                : "/placeholder.svg?height=100&width=100"
+            }
             alt="Avatar"
             className="avatar"
+            onError={(e) => {
+              e.target.onerror = null; 
+              e.target.src = "/placeholder.svg?height=100&width=100";
+            }}
           />
-          </div>
+        </div>
           <div className="user-details">
             <h3>{user.fullName}</h3>
             <p className="username">@{user.userName}</p>

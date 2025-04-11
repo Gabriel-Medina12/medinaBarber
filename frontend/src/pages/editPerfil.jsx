@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import api from "../api";
 
 const EditPerfil = () => {
   document.title = 'Editar Perfil | Medina Barber';
@@ -19,59 +20,46 @@ const EditPerfil = () => {
   const [avatarChanged, setAvatarChanged] = useState(false);
 
   useEffect(() => {
-    // Obtener el token del localStorage
-    const token = localStorage.getItem("token");
-    
-    if (!token) {
-      navigate("/pages/auth/login");
-      return;
-    }
-
-    // Obtener los datos del perfil del usuario
-    fetch("http://localhost:3000/api/users/profile", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      }
-    })
-      .then((res) => {
-        if (!res.ok) {
-          if (res.status === 401) {
-            // Si el token es inválido, redirigir al login
-            localStorage.removeItem("token");
-            navigate("/pages/auth/login");
-            throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
-          }
-          throw new Error("Error al obtener los datos del perfil");
-        }
-        return res.json();
-      })
-      .then((data) => {
+    const fetchProfile = async () => {
+      try {
+        const response = await api.get('/users/profile');
+        const { user } = response.data;
+        
         setFormData({
-          fullName: data.user.fullName || "",
-          userName: data.user.userName || "",
+          fullName: user.fullName || "",
+          userName: user.userName || "",
         });
         
-        if (data.user.avatar) {
-          setAvatarPreview(data.user.avatar);
+        if (user.avatar) {
+          setAvatarPreview(`http://localhost:3000${user.avatar}`);
         }
         
+      } catch (error) {
+        handleProfileError(error);
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError(err.message || "Error al obtener el perfil");
-        setLoading(false);
-      });
+      }
+    };
+
+    const handleProfileError = (error) => {
+      if (error.response?.status === 401) {
+        localStorage.removeItem("token");
+        navigate("/pages/auth/login", {
+          state: { message: "Sesión expirada. Por favor, inicia sesión nuevamente." }
+        });
+      }
+      setError(error.response?.data?.message || "Error al cargar el perfil");
+    };
+
+    fetchProfile();
   }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -79,14 +67,7 @@ const EditPerfil = () => {
     setError("");
     setSuccessMessage("");
     
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/pages/auth/login");
-      return;
-    }
-    
     try {
-      // Crear un FormData para enviar el archivo
       const formDataToSend = new FormData();
       formDataToSend.append('fullName', formData.fullName);
       formDataToSend.append('userName', formData.userName);
@@ -95,32 +76,39 @@ const EditPerfil = () => {
         formDataToSend.append('avatar', avatar);
       }
       
-      const response = await fetch("http://localhost:3000/api/users/edit-profile", {
-        method: "POST",
+      const response = await api.post('/users/edit-profile', formDataToSend,{
         headers: {
-          // No incluir Content-Type, FormData lo establece automáticamente
-          "Authorization": `Bearer ${token}`
-        },
-        body: formDataToSend
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
       });
       
-      const data = await response.json();
+      setSuccessMessage(response.data.message || "Perfil actualizado exitosamente");
       
-      if (!response.ok) {
-        throw new Error(data.message || "Error al actualizar el perfil");
-      }
-      
-      setSuccessMessage("Perfil actualizado exitosamente");
-      
-      // Redirigir al perfil después de 2 segundos
       setTimeout(() => {
         navigate("/pages/perfil");
       }, 2000);
       
     } catch (error) {
-      console.error(error);
-      setError(error.message || "Error al actualizar el perfil");
+      handleSubmitError(error);
     }
+  };
+
+  const handleSubmitError = (error) => {
+    const errorMessage = error.response?.data?.message || "Error al actualizar el perfil";
+    
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      navigate("/pages/auth/login");
+    }
+    
+    if (error.response?.status === 400 && error.response.data?.errors) {
+      const validationErrors = Object.values(error.response.data.errors).join(", ");
+      setError(`Errores de validación: ${validationErrors}`);
+      return;
+    }
+    
+    setError(errorMessage);
   };
 
   // Función para convertir archivo a base64
@@ -224,7 +212,7 @@ const EditPerfil = () => {
         </div>
 
         <button type="submit" className="cambiar-button">
-          GUARDAR CAMBIOS
+          Guardar Cambios
         </button>
       </form>
     </div>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import api from "../../api";
 
 const ForgotPassword = () => {
   document.title = 'Recuperar Contraseña | Medina Barber';
@@ -15,15 +15,21 @@ const ForgotPassword = () => {
     setMessage("");
     
     try {
-      const response = await axios.post('http://localhost:3000/api/users/forgot-password', { email });
+      const response = await api.post('/users/forgot-password', { email });
       
-      if (response.data.success) {
-        setIsSuccess(true);
-        setMessage(response.data.message);
-      }
+      setIsSuccess(true);
+      setMessage(response.data.message);
+      
     } catch (error) {
       setIsSuccess(false);
-      setMessage(error.response?.data?.message || "Ocurrió un error al procesar tu solicitud");
+      const errorMessage = error.response?.data?.message 
+        || "Ocurrió un error al procesar tu solicitud";
+      setMessage(errorMessage);
+      
+      // Opcional: Resetear el formulario si es necesario
+      if (error.response?.status === 404) {
+        setEmail("");
+      }
     } finally {
       setIsLoading(false);
     }
