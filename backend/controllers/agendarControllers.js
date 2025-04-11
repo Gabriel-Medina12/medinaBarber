@@ -243,10 +243,8 @@ router.get('/user', verifyToken, async (req, res) => {
       });
     }
     
-    // Especificar explícitamente las columnas que quieres seleccionar
     const citas = await db.Citas.findAll({
       where: { userId },
-      attributes: ['id', 'userId', 'clientName', 'service', 'date', 'time', 'notes', 'confirmed', 'paid', 'paymentMethod', 'referenceNumber', 'paymentProofPath'],
       order: [['date', 'ASC'], ['time', 'ASC']]
     });
     
@@ -262,10 +260,11 @@ router.get('/user', verifyToken, async (req, res) => {
       success: false, 
       message: 'Error al obtener las citas',
       error: error.message,
-      appointments: []
+      appointments: []  // Devolver array vacío para evitar errores en el frontend
     });
   }
 });
+
 // Obtener horarios disponibles para una fecha específica
 router.get('/available-slots', async (req, res) => {
   try {
