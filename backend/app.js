@@ -13,10 +13,30 @@ const port = process.env.PORT;
 const host = process.env.HOST
 
 app.use(cors({
-    origin: process.env.ORIGIN,
+    origin: function(origin, callback) {
+        // Permitir solicitudes desde tu dominio principal y dominios de vista previa de Netlify
+        const origenesPermitidos = [
+            process.env.ORIGIN,                    // Tu dominio principal
+            /https:\/\/.*--medinabarber\.netlify\.app$/  // Cualquier URL de vista previa de Netlify
+        ];
+        
+        // Verificar si el origen está permitido
+        const origenEsPermitido = !origin || 
+            origenesPermitidos.some(origenPermitido => 
+                typeof origenPermitido === 'string' 
+                    ? origenPermitido === origin 
+                    : origenPermitido.test(origin)
+            );
+            
+        if (origenEsPermitido) {
+            callback(null, true);
+        } else {
+            callback(new Error('No permitido por CORS'));
+        }
+    },
     methods: 'GET, POST, PUT, DELETE',
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials:true
+    credentials: true
 }));
 
 app.use(bodyParser.json({ limit: '50mb' }));
