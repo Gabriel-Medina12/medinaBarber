@@ -2,12 +2,12 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Loader from "./components/Loader.jsx";
-import Header from "./components/Header.jsx";
+import Header from "./components/header.jsx";
 import Auth from "./pages/auth/login.jsx";
 import Home from "./pages/home.jsx";
 import ForgotPassword from "./pages/auth/forgotPassword.jsx";
 import ResetPassword from "./pages/auth/resetPassword.jsx";
-import Footer from "./components/Footer.jsx";
+import Footer from "./components/footer.jsx";
 import Contacto from "./pages/contacto.jsx";
 import Agendar from "./pages/AgendarCitas.jsx";
 import Perfil from "./pages/perfil.jsx";
