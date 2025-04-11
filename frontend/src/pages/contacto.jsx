@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import img1 from '../assets/img/Logo Medina Barber.png';
 
 axios.defaults.baseURL = 'http://localhost:3000';
 
@@ -75,7 +76,7 @@ const Contacto = () => {
         <>
             <div className="navbarCorto-subpages">
                 <div className="logo-MB logo">
-                    <Link to="/"><img src="../src/assets/img/LogoMedinaBarber.PNG" alt="Logo Medina Barber"/></Link>
+                    <Link to="/"><img src={img1} alt="Logo Medina Barber"/></Link>
                 </div>
                 <div className="navBar-Corto">
                     <Link to="/" className="enlace-Home nav-corto">Inicio</Link> 
