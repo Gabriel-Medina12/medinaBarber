@@ -86,9 +86,9 @@ const Auth = ({ setIsAuthenticated, setIsAdmin }) => {
       navigate(isAdmin ? '/admin/dashboard' : redirectTo);
       
     } catch (error) {
-      const message = error.response?.data?.message || 'Error en el inicio de sesión';
-      setLoginMessage(message);
-      console.error('Error en el login:', error);
+      console.error('Error completo:', error);
+      const errorMessage = error.response?.data?.message || 'Error en el inicio de sesión';
+      setLoginMessage(errorMessage);
     }
   };
 

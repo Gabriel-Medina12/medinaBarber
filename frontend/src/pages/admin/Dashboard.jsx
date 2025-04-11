@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "api";
 import AdminSidebar from "../../components/AdminSidebar";
 import { Users, Calendar, MessageSquare, TrendingUp } from "lucide-react";
+import api from "../../api";
 
 const AdminDashboard = () => {
   document.title = 'Dashboard Admin | Medina Barber';
@@ -26,7 +27,7 @@ const AdminDashboard = () => {
     const fetchData = async () => {
       try {
         // Obtener estadísticas
-        const statsResponse = await axios.get('/api/admin/dashboard', {
+        const statsResponse = await api.get('/admin/dashboard', {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -36,7 +37,7 @@ const AdminDashboard = () => {
         }
         
         // Obtener citas recientes
-        const appointmentsResponse = await axios.get('/api/admin/appointments', {
+        const appointmentsResponse = await api.get('/admin/appointments', {
           headers: { Authorization: `Bearer ${token}` }
         });
         
