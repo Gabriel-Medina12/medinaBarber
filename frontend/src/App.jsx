@@ -20,7 +20,7 @@ import AdminAppointments from "./pages/admin/Appointments.jsx";
 import AdminHaircuts from "./pages/admin/cortes.jsx";
 // import AdminSettings from "./pages/admin/settings.jsx";
 
-import "./app.css";
+import "./App.css";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
