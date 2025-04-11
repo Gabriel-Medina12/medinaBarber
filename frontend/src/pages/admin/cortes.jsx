@@ -28,7 +28,7 @@ const AdminHaircuts = () => {
     
     const fetchUsers = async () => {
       try {
-        const response = await axioapi.get('/admin/users', {
+        const response = await api.get('/admin/users', {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -178,7 +178,7 @@ const AdminHaircuts = () => {
     
     try {
       const response = await api.delete(
-        `/api/admin/cortes/${corteId}`,
+        `/admin/cortes/${corteId}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
