@@ -168,18 +168,16 @@ function CalendarioCitas() {
     day = new Date().getDate(),
     month = new Date().getMonth(),
     year = new Date().getFullYear()
-) => {
-    // Validar si day, month, year son números válidos antes de crear Date
+  ) => {
     const targetDate = new Date(year, month, day);
     if (isNaN(targetDate.getTime())) {
-        console.warn("Fecha inválida recibida del chatbot. Usando fecha actual.");
-        targetDate = new Date(); // Fallback a la fecha actual si es inválida
+      console.warn("Fecha inválida recibida del chatbot. Usando fecha actual.");
+      targetDate = new Date();
     }
 
     setSelectedDay(targetDate.getDate());
-    setCurrentDate(new Date(targetDate.getFullYear(), targetDate.getMonth(), 1)); // Esto asegura que el calendario se posicione en el mes correcto
+    setCurrentDate(new Date(targetDate.getFullYear(), targetDate.getMonth(), 1));
     setShowAppointmentForm(true);
-
     
     setAppointmentData(prev => ({
       ...prev,
@@ -207,28 +205,17 @@ function CalendarioCitas() {
 
   const handleFinalApiSubmission = async (e, finalData) => {
     e.preventDefault();
-
     setLoading(true);
+
     try {
       const token = localStorage.getItem("token");
-<<<<<<< HEAD
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-      const response = await api.post("/agendar", finalData, {
-        headers: {
-          ...headers,
-          "Content-Type": "application/json",
-        },
-      });
+      let requestData;
+      let requestHeaders = { ...headers };
 
-=======
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-      
-      // Si es pago con tarjeta y hay comprobante, usar FormData
       if (finalData.paymentMethod === 'tarjeta' && finalData.paymentProof) {
-        formData = new FormData();
+        const formData = new FormData();
         formData.append('clientName', finalData.clientName);
         formData.append('service', finalData.service);
         formData.append('date', finalData.date);
@@ -244,9 +231,10 @@ function CalendarioCitas() {
         if (finalData.paymentProof) {
           formData.append('paymentProof', finalData.paymentProof);
         }
+
+        requestData = formData;
       } else {
-        // Para pago en efectivo, enviar como JSON
-        formData = {
+        requestData = {
           clientName: finalData.clientName,
           service: finalData.service,
           date: finalData.date,
@@ -255,24 +243,17 @@ function CalendarioCitas() {
           email: finalData.email,
           paymentMethod: finalData.paymentMethod || 'efectivo'
         };
-        
-        headers['Content-Type'] = 'application/json';
+        requestHeaders['Content-Type'] = 'application/json';
       }
-      
-      // Enviar al backend
-      const response = await api.post(
-        '/agendar', 
-        formData instanceof FormData ? formData : formData,
-        { headers }
-      );
-      
->>>>>>> 4c60302f648fc7b5781851b60c0d79036e183152
+
+      const response = await api.post('/agendar', requestData, {
+        headers: requestHeaders
+      });
+
       if (response.data.success) {
-        console.log("Cita agendada exitosamente:", response.data);
         alert("¡Cita agendada con éxito! Revisa tu correo electrónico.");
         handleCloseAppointmentForm();
       } else {
-        console.error("Error al agendar:", response.data.message);
         alert("Error al agendar la cita: " + (response.data.message || "Inténtalo de nuevo."));
       }
     } catch (error) {
@@ -284,15 +265,13 @@ function CalendarioCitas() {
   };
 
   const handleOpenModalFromChatbot = useCallback((day, month, year) => {
-    handleOpenModalFromChatbot = useCallback((day, month, year)=>{
-      handleOpenModalFromChatbot(day, month, year);
-    }, [handleOpenAppointmentForm], [handleOpenAppointmentForm]);
-    if (selectedDateFromChat) {
-      handleOpenAppointmentForm(selectedDateFromChat.getDate(), selectedDateFromChat);
-    } else {
-      handleOpenAppointmentForm(new Date().getDate());
+    const targetDate = new Date(year, month, day);
+    if (isNaN(targetDate.getTime())) {
+      console.warn("Fecha inválida. Usando fecha actual.");
+      targetDate = new Date();
     }
-  }, [userData]);
+    handleOpenAppointmentForm(targetDate.getDate(), targetDate.getMonth(), targetDate.getFullYear());
+  }, [handleOpenAppointmentForm]);
 
   const formatDate = (date) => {
     const options = { 
