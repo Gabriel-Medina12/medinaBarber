@@ -211,6 +211,7 @@ function CalendarioCitas() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
+<<<<<<< HEAD
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       const response = await api.post("/agendar", finalData, {
@@ -220,6 +221,52 @@ function CalendarioCitas() {
         },
       });
 
+=======
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
+      // Si es pago con tarjeta y hay comprobante, usar FormData
+      if (finalData.paymentMethod === 'tarjeta' && finalData.paymentProof) {
+        formData = new FormData();
+        formData.append('clientName', finalData.clientName);
+        formData.append('service', finalData.service);
+        formData.append('date', finalData.date);
+        formData.append('time', finalData.time);
+        formData.append('notes', finalData.notes || '');
+        formData.append('email', finalData.email);
+        formData.append('paymentMethod', finalData.paymentMethod);
+        
+        if (finalData.referenceNumber) {
+          formData.append('referenceNumber', finalData.referenceNumber);
+        }
+        
+        if (finalData.paymentProof) {
+          formData.append('paymentProof', finalData.paymentProof);
+        }
+      } else {
+        // Para pago en efectivo, enviar como JSON
+        formData = {
+          clientName: finalData.clientName,
+          service: finalData.service,
+          date: finalData.date,
+          time: finalData.time,
+          notes: finalData.notes || '',
+          email: finalData.email,
+          paymentMethod: finalData.paymentMethod || 'efectivo'
+        };
+        
+        headers['Content-Type'] = 'application/json';
+      }
+      
+      // Enviar al backend
+      const response = await api.post(
+        '/agendar', 
+        formData instanceof FormData ? formData : formData,
+        { headers }
+      );
+      
+>>>>>>> 4c60302f648fc7b5781851b60c0d79036e183152
       if (response.data.success) {
         console.log("Cita agendada exitosamente:", response.data);
         alert("¡Cita agendada con éxito! Revisa tu correo electrónico.");

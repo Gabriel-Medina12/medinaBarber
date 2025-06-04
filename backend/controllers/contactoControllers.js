@@ -13,7 +13,7 @@ router.post('/',  async (req, res) => {
         }
 
         // Guardar en la base de datos
-        const nuevoContacto = await db.Contacto.create({
+        const nuevoContacto = await db.Contactos.create({
             nombre,
             correo,
             asunto,
