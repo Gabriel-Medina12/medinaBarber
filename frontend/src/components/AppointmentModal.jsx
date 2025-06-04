@@ -1,9 +1,8 @@
 "use client"
 import { User, Scissors, Clock, Calendar, Mail, CreditCard, AlertCircle, Smartphone, Upload, FileText, Check, Receipt} from "lucide-react"
-import { useState, useRef, useEffect } from "react" // Añadir useEffect aquí
+import { useState, useRef, useEffect } from "react"
 import axios from "axios";
 import api from "../api";
-
 
 function AppointmentModal({
   selectedDay,
@@ -16,9 +15,9 @@ function AppointmentModal({
   handleCloseForm,
   userData,
 }) {
-  const [step, setStep] = useState(1); // 1: Información básica, 2: Confirmación/Pago, 3: Comprobante de pago
+  const [step, setStep] = useState(1);
   const [formErrors, setFormErrors] = useState({});
-  const [paymentMethod, setPaymentMethod] = useState("efectivo"); // efectivo, tarjeta, etc.
+  const [paymentMethod, setPaymentMethod] = useState("efectivo");
   const [loading, setLoading] = useState(false);
   const [paymentProof, setPaymentProof] = useState(null);
   const [referenceNumber, setReferenceNumber] = useState("");
@@ -27,7 +26,6 @@ function AppointmentModal({
   const [dolarRate, setDolarRate] = useState(null);
   const [loadingRate, setLoadingRate] = useState(false);
 
-  // Datos de pago móvil
   const [pagoMovilData, setPagoMovilData] = useState({
     telefono: "0412-2911866",
     cedula: "30891515",
@@ -35,17 +33,15 @@ function AppointmentModal({
     monto: "Cargando..."
   });
 
-  // Obtener tasa del dólar paralelo
+  // Obtener tasa del dólar
   useEffect(() => {
     const fetchDolarRate = async () => {
       setLoadingRate(true);
       try {
-        const response = await axios.get('https://ve.dolarapi.com/v1/dolares/paralelo');
+        const response = await axios.get('https://ve.dolarapi.com/v1/dolares/oficial');
         if (response.data && response.data.promedio) {
           const rate = response.data.promedio;
           setDolarRate(rate);
-          
-          // Calcular el monto en bolívares (5$ * tasa)
           const montoEnBs = (5 * rate).toFixed(2);
           setPagoMovilData(prev => ({
             ...prev,
@@ -71,79 +67,38 @@ function AppointmentModal({
     fetchDolarRate();
   }, []);
 
-  // Añadir esta validación de fecha pasada
+  // Validar que la fecha seleccionada no sea en el pasado
   useEffect(() => {
     if (userData) {
-      // Crear una copia del objeto appointmentData
-      const updatedData = { ...appointmentData };
-      
-      // Actualizar solo si los campos están vacíos o si userData tiene los datos
       if (userData.fullName && (!appointmentData.clientName || appointmentData.clientName === "")) {
-        updatedData.clientName = userData.fullName;
-      }
-      if (userData.email && (!appointmentData.email || appointmentData.email === "")) {
-        updatedData.email = userData.email;
-      }
-      if (updatedData.clientName !== appointmentData.clientName) {
         handleInputChange({
-          target: { name: 'clientName', value: updatedData.clientName }
+          target: { name: 'clientName', value: userData.fullName }
         });
       }
-      if (updatedData.email !== appointmentData.email) {
+      if (userData.email && (!appointmentData.email || appointmentData.email === "")) {
         handleInputChange({
-          target: { name: 'email', value: updatedData.email }
+          target: { name: 'email', value: userData.email }
         });
       }
     }
 
-    // Crear la fecha seleccionada
+    // Validar fecha seleccionada
     const selectedDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
       selectedDay
     );
     
-    // Obtener la fecha actual sin horas/minutos/segundos para comparación justa
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
     // Si la fecha seleccionada es anterior a hoy, cerrar el modal
     if (selectedDate < today) {
+      alert('No puedes agendar citas en fechas pasadas. Por favor selecciona una fecha futura.');
       handleCloseForm();
     }
-  }, [selectedDay, currentDate, handleCloseForm]);
+  }, [selectedDay, currentDate, handleCloseForm, userData, appointmentData.clientName, appointmentData.email, handleInputChange]);
 
-  // Obtener el nombre del mes
-  const getMonthName = (date) => {
-    const months = [
-      "Enero",
-      "Febrero",
-      "Marzo",
-      "Abril",
-      "Mayo",
-      "Junio",
-      "Julio",
-      "Agosto",
-      "Septiembre",
-      "Octubre",
-      "Noviembre",
-      "Diciembre",
-    ]
-    return months[date.getMonth()]
-  }
-
-  // Añade esta función auxiliar al principio del componente
-  const formatDateToYYYYMMDD = (yearParam, monthParam, dayParam) => {
-    // Convertir los parámetros a números
-    const y = parseInt(yearParam, 10);
-    const m = parseInt(monthParam, 10) + 1; // +1 porque en JS los meses son base 0
-    const d = parseInt(dayParam, 10);
-    
-    // Formatear con padding de ceros
-    return `${y}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
-  };
-
-  // Validar el formulario antes de pasar al siguiente paso
   const validateForm = () => {
     const errors = {};
     
@@ -169,7 +124,6 @@ function AppointmentModal({
     return Object.keys(errors).length === 0;
   }
 
-  // Validar el comprobante de pago
   const validatePaymentProof = () => {
     const errors = {};
     
@@ -187,16 +141,13 @@ function AppointmentModal({
     return Object.keys(errors).length === 0;
   }
 
-  // Avanzar al siguiente paso
   const handleNextStep = (e) => {
     e.preventDefault();
-    
     if (validateForm()) {
       setStep(2);
     }
   }
 
-  // Volver al paso anterior
   const handlePrevStep = () => {
     if (step === 3) {
       setStep(2);
@@ -205,39 +156,32 @@ function AppointmentModal({
     }
   }
 
-  // Manejar la subida de la imagen
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
-    // Validar tipo de archivo
     if (!file.type.startsWith('image/')) {
       setFormErrors({...formErrors, paymentProof: 'Solo se permiten imágenes'});
       return;
     }
     
-    // Validar tamaño
     if (file.size > 5 * 1024 * 1024) {
       setFormErrors({...formErrors, paymentProof: 'El archivo es muy grande (máx 5MB)'});
       return;
     }
 
-    if (file) {
-      setPaymentProof(file);
-      // Crear una vista previa de la imagen
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const previewImg = document.getElementById('payment-proof-preview');
-        if (previewImg) {
-          previewImg.src = reader.result;
-          previewImg.style.display = 'block';
-        }
-      };
-      reader.readAsDataURL(file);
-    }
+    setPaymentProof(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const previewImg = document.getElementById('payment-proof-preview');
+      if (previewImg) {
+        previewImg.src = reader.result;
+        previewImg.style.display = 'block';
+      }
+    };
+    reader.readAsDataURL(file);
   }
 
-  // Manejar el cambio en el número de referencia
   const handleReferenceChange = (e) => {
     setReferenceNumber(e.target.value);
   }
@@ -250,39 +194,38 @@ function AppointmentModal({
     return `${day} de ${months[month]} de ${year}`;
   };
 
-  // Manejar el envío del comprobante de pago
+  const formatDateToYYYYMMDD = (yearParam, monthParam, dayParam) => {
+    const y = parseInt(yearParam, 10);
+    const m = parseInt(monthParam, 10) + 1;
+    const d = parseInt(dayParam, 10);
+    return `${y}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+  };
+
+  // Envío del comprobante de pago
   const handlePaymentProofSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validatePaymentProof()) return;
 
     setLoading(true);
-    
+
     try {
       const formData = new FormData();
-      
-      // Campos obligatorios
       formData.append("clientName", appointmentData.clientName);
       formData.append("email", appointmentData.email);
       formData.append("service", appointmentData.service);
-      
-      // Usar la función auxiliar para crear la fecha correctamente
+
       const formattedDate = formatDateToYYYYMMDD(
         currentDate.getFullYear(),
         currentDate.getMonth(),
         selectedDay
       );
       formData.append("date", formattedDate);
-      
-      console.log('Enviando fecha en comprobante:', formattedDate); // Log para depuración
-      
       formData.append("time", appointmentData.time);
-      
-      // Campos condicionales
-      formData.append("paymentMethod", "tarjeta");
+      formData.append("paymentMethod", paymentMethod);
       formData.append("referenceNumber", referenceNumber);
       formData.append("paymentProof", paymentProof);
-      
+
       if (appointmentData.notes) {
         formData.append("notes", appointmentData.notes);
       }
@@ -299,36 +242,54 @@ function AppointmentModal({
 
       if (response.data.success) {
         setPaymentComplete(true);
+
+        // Enviar datos a Make (webhook)
+        const makePayload = {
+          clientName: appointmentData.clientName,
+          email: appointmentData.email,
+          service: appointmentData.service,
+          date: formattedDate,
+          time: appointmentData.time,
+          notes: appointmentData.notes || 'Sin notas',
+          paymentMethod: paymentMethod,
+          referenceNumber: referenceNumber,
+          paymentProofStatus: paymentProof ? 'Subido' : 'No Subido',
+        };
+
+        try {
+          // Reemplaza con tu URL de webhook de Make
+          await axios.post('TU_WEBHOOK_URL_DE_MAKE', makePayload);
+          console.log("Datos enviados a Make exitosamente.");
+        } catch (makeError) {
+          console.error("Error al enviar datos a Make:", makeError);
+        }
       }
     } catch (error) {
-      console.error("Detalles del error:", {
-        message: error.response?.data?.message,
-        error: error.response?.data?.error,
-      });
+      console.error("Error al agendar con comprobante:", error);
+      setFormErrors(error.response?.data?.errors || { general: "Error al registrar pago. Intenta de nuevo." });
     } finally {
       setLoading(false);
     }
   };
 
-  // Manejar el envío final del formulario
-  const handleFinalSubmit = (e) => {
+  // Envío final del formulario
+  const handleFinalSubmit = async (e) => {
     e.preventDefault();
 
-    if(paymentMethod === 'tarjeta') {
+    if (paymentMethod === 'tarjeta') {
       setStep(3);
       return;
     }
+
     setLoading(true);
 
-    // Usar la función auxiliar para crear la fecha correctamente
     const formattedDate = formatDateToYYYYMMDD(
       currentDate.getFullYear(),
       currentDate.getMonth(),
       selectedDay
     );
     
-    // Crear objeto con todos los datos finales
-    const finalData = {
+    const finalDataForYourApi = {
       clientName: appointmentData.clientName,
       email: appointmentData.email,
       service: appointmentData.service,
@@ -338,27 +299,39 @@ function AppointmentModal({
       paymentMethod: paymentMethod
     };
     
-    // Si es pago con tarjeta, añadir referencia y comprobante
-    if (paymentMethod === 'tarjeta') {
-      finalData.referenceNumber = referenceNumber;
-      finalData.paymentProof = paymentProof;
-    }
-    
-    console.log('Enviando fecha:', formattedDate); // Log para depuración
-    
-    // Llamar a la función de envío del componente padre
-    handleSubmit(e, finalData);
-  }
-  
-  const selectedDate = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    selectedDay
-  );
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+    try {
+      await handleSubmit(e, finalDataForYourApi);
+      
+      // Enviar datos a Make para pagos en efectivo
+      const makePayload = {
+        clientName: appointmentData.clientName,
+        email: appointmentData.email,
+        service: appointmentData.service,
+        date: formattedDate,
+        time: appointmentData.time,
+        notes: appointmentData.notes || 'Sin notas',
+        paymentMethod: paymentMethod,
+        referenceNumber: 'N/A',
+        paymentProofStatus: 'No Subido',
+      };
 
-  // Renderizar el paso de comprobante de pago
+      try {
+        // Reemplaza con tu URL de webhook de Make
+        await axios.post('TU_WEBHOOK_URL_DE_MAKE', makePayload);
+        console.log("Datos de cita (efectivo) enviados a Make exitosamente.");
+      } catch (makeError) {
+        console.error("Error al enviar datos a Make:", makeError);
+      }
+
+    } catch (error) {
+      console.error("Error al agendar (efectivo):", error);
+      setFormErrors(error.response?.data?.errors || { general: "Error al agendar la cita. Intenta de nuevo." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Renderizar paso de comprobante de pago
   const renderPaymentProofStep = () => {
     if (paymentComplete) {
       return (

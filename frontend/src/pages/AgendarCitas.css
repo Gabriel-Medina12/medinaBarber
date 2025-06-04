@@ -1,0 +1,197 @@
+:root {
+  --background-color: #F8F9FA;
+  --accent-color: #0D1B2A;
+  --accent-color-light: #1B263B;
+  --primary-text: #212529;
+  --secondary-text: #6C757D;
+  --highlight-color: #778DA9;
+  --white: #FFFFFF;
+  --border-color: #E0E1DD;
+  --shadow-color: rgba(0, 0, 0, 0.05);
+}
+
+
+/* CalendarioCitas.css */
+
+.agendar-citas-page {
+  background-color: var(--background-color);
+  color: var(--primary-text);
+  padding: 2rem;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+}
+.headers-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  padding: 2rem;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  margin-bottom: 1rem;
+}
+
+.calendar-container {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.calendar-section {
+  flex: 2;
+}
+
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.calendar-nav h2 {
+  font-size: 1.2rem;
+  color: var(--accent-color);
+  margin: 0;
+}
+
+.nav-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--accent-color);
+  padding: 0.5rem;
+  transition: background-color 0.3s ease;
+}
+
+.nav-button:hover {
+  background-color: var(--border-color);
+  border-radius: 6px;
+}
+
+.calendar-grid-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: 500;
+  color: var(--secondary-text);
+  margin-bottom: 0.5rem;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+}
+
+.day {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.day.today {
+  border: 2px solid var(--highlight-color);
+}
+
+.day.selected {
+  background-color: var(--highlight-color);
+  color: var(--white);
+}
+
+.day.has-appointment::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background-color: var(--highlight-color);
+  border-radius: 50%;
+  position: absolute;
+  bottom: 8px;
+}
+
+.day:hover {
+  background-color: var(--accent-color-light);
+  color: var(--white);
+  transform: scale(1.05);
+}
+
+.week-appointments {
+  background-color: var(--white);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 6px var(--shadow-color);
+}
+
+.week-appointments h4 {
+  color: var(--accent-color);
+  margin-bottom: 1rem;
+}
+
+.appointment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+.appointment-item:last-child {
+  border-bottom: none;
+}
+
+.new-appointment-button {
+  background-color: var(--accent-color);
+  color: var(--white);
+  border: none;
+  border-radius: 6px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.new-appointment-button:hover {
+  background-color: var(--accent-color-light);
+}
+.logo {
+  height: 48px; /* tamaño ajustable */
+  width: auto;
+  filter: brightness(0.85); /* opción para suavizar un poco el logo */
+  user-select: none;
+}
+@media (max-width: 600px) {
+  .headers-container {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem; /* espacio entre título y logo */
+    margin-bottom: 1.5rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  .logo {
+    height: 36px; /* reduce un poco el logo para pantallas pequeñas */
+  }
+}
