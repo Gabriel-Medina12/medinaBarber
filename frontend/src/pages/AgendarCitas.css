@@ -1,3 +1,5 @@
+/* CalendarioCitas.css - Versión Optimizada Responsive */
+
 :root {
   --background-color: #F8F9FA;
   --accent-color: #0D1B2A;
@@ -10,46 +12,54 @@
   --shadow-color: rgba(0, 0, 0, 0.05);
 }
 
-
-/* CalendarioCitas.css */
-
 .agendar-citas-page {
   background-color: var(--background-color);
   color: var(--primary-text);
-  padding: 2rem;
+  padding: 1rem;
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
 }
-.headers-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
+
 .main-content {
   max-width: 1200px;
   margin: 0 auto;
   background-color: var(--white);
   border-radius: 12px;
   box-shadow: 0 4px 12px var(--shadow-color);
-  padding: 2rem;
+  padding: 1.5rem;
+}
+
+.headers-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .title {
   font-size: 1.8rem;
   font-weight: 600;
   color: var(--accent-color);
-  margin-bottom: 1rem;
+  margin: 0;
+  text-align: center;
+}
+
+.logo {
+  height: 48px;
+  width: auto;
+  filter: brightness(0.85);
+  user-select: none;
 }
 
 .calendar-container {
   display: flex;
+  flex-direction: column;
   gap: 2rem;
-  flex-wrap: wrap;
 }
 
 .calendar-section {
-  flex: 2;
+  width: 100%;
 }
 
 .calendar-nav {
@@ -63,6 +73,8 @@
   font-size: 1.2rem;
   color: var(--accent-color);
   margin: 0;
+  text-align: center;
+  flex-grow: 1;
 }
 
 .nav-button {
@@ -72,6 +84,7 @@
   color: var(--accent-color);
   padding: 0.5rem;
   transition: background-color 0.3s ease;
+  flex-shrink: 0;
 }
 
 .nav-button:hover {
@@ -86,6 +99,7 @@
   font-weight: 500;
   color: var(--secondary-text);
   margin-bottom: 0.5rem;
+  font-size: 0.9rem;
 }
 
 .calendar-grid {
@@ -95,7 +109,7 @@
 }
 
 .day {
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -103,16 +117,32 @@
   border: 1px solid var(--border-color);
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.1s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  font-size: 0.9rem;
+}
+
+.day.empty {
+  visibility: hidden;
 }
 
 .day.today {
   border: 2px solid var(--highlight-color);
+  font-weight: bold;
 }
 
 .day.selected {
   background-color: var(--highlight-color);
   color: var(--white);
+}
+
+.day.past-day {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.day.weekend {
+  background-color: rgba(0, 0, 0, 0.03);
 }
 
 .day.has-appointment::after {
@@ -125,10 +155,18 @@
   bottom: 8px;
 }
 
-.day:hover {
+.day.selected.has-appointment::after {
+  background-color: var(--white);
+}
+
+.day:hover:not(.past-day) {
   background-color: var(--accent-color-light);
   color: var(--white);
   transform: scale(1.05);
+}
+
+.sidebar {
+  width: 100%;
 }
 
 .week-appointments {
@@ -136,24 +174,62 @@
   border-radius: 8px;
   padding: 1rem;
   box-shadow: 0 2px 6px var(--shadow-color);
+  margin-bottom: 1rem;
 }
 
 .week-appointments h4 {
   color: var(--accent-color);
   margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  font-size: 1.1rem;
+}
+
+.appointments-list {
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .appointment-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 0;
+  padding: 0.75rem 0;
   border-bottom: 1px solid var(--border-color);
   font-size: 0.9rem;
 }
 
 .appointment-item:last-child {
   border-bottom: none;
+}
+
+.appointment-date {
+  font-weight: 500;
+  min-width: 60px;
+}
+
+.appointment-details {
+  flex-grow: 1;
+  margin-left: 1rem;
+}
+
+.appointment-time {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--secondary-text);
+  font-size: 0.85rem;
+}
+
+.appointment-service {
+  font-weight: 500;
+  margin-top: 0.2rem;
+}
+
+.appointment-client {
+  color: var(--secondary-text);
+  font-size: 0.85rem;
+  margin-top: 0.2rem;
 }
 
 .new-appointment-button {
@@ -164,34 +240,122 @@
   padding: 0.75rem 1.5rem;
   font-weight: 500;
   cursor: pointer;
-  margin-top: 1rem;
+  width: 100%;
   transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .new-appointment-button:hover {
   background-color: var(--accent-color-light);
 }
-.logo {
-  height: 48px; /* tamaño ajustable */
-  width: auto;
-  filter: brightness(0.85); /* opción para suavizar un poco el logo */
-  user-select: none;
-}
-@media (max-width: 600px) {
-  .headers-container {
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem; /* espacio entre título y logo */
-    margin-bottom: 1.5rem;
-  }
 
+.new-appointment-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.new-appointment-button.loading::after {
+  content: "";
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: var(--white);
+  animation: spin 1s linear infinite;
+  margin-left: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Media Queries para Responsive */
+
+@media (min-width: 1400px) {
+  html {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 768px) {
+  .agendar-citas-page {
+    padding: 2rem;
+  }
+  
+  .main-content {
+    padding: 2rem;
+  }
+  
+  .headers-container {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .title {
+    text-align: left;
+    margin-bottom: 0;
+  }
+  
+  .calendar-container {
+    flex-direction: row;
+  }
+  
+  .calendar-section {
+    flex: 2;
+    min-width: 0;
+  }
+  
+  .sidebar {
+    flex: 1;
+    min-width: 300px;
+  }
+  
+  .calendar-grid-header div {
+    font-size: 1rem;
+  }
+  
+  .day {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 600px) and (max-width: 767px) {
+  .calendar-grid {
+    gap: 0.3rem;
+  }
+  .day {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
   .title {
     font-size: 1.5rem;
-    text-align: center;
   }
-
-  .logo {
-    height: 36px; /* reduce un poco el logo para pantallas pequeñas */
+  
+  .calendar-nav h2 {
+    font-size: 1rem;
+  }
+  
+  .calendar-grid-header div {
+    font-size: 0.8rem;
+  }
+  
+  .day {
+    font-size: 0.8rem;
+  }
+  
+  .appointment-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
+  
+  .appointment-details {
+    margin-left: 0;
+    width: 100%;
   }
 }
