@@ -1,33 +1,76 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../ChatbotWidget.css';
 
-function ChatbotWidget({ onOpenAppointmentModal }) {
+// Funciones de respaldo para cuando no está disponible el servicio de notificaciones
+const sendEmailNotification = (data) => {
+  console.log('Simulando envío de email:', data);
+  // En producción, aquí se conectaría con un servicio real de emails
+};
+
+const sendWhatsAppNotification = (data) => {
+  console.log('Simulando envío de WhatsApp:', data);
+  // En producción, aquí se conectaría con un servicio real de WhatsApp
+};
+
+// Descomenta esta línea si tienes el archivo notificationService.js configurado
+// import { sendEmailNotification, sendWhatsAppNotification } from './notificationService';
+
+function ChatbotWidget({ onOpenAppointmentModal, autoOpen = true, autoOpenDelay = 3000 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [conversationStep, setConversationStep] = useState(0);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedTime, setSelectedTime] = useState(null);
   const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [userPhone, setUserPhone] = useState('');
   const [selectedService, setSelectedService] = useState('');
   const messagesEndRef = useRef(null);
   const [visibleDatesCount, setVisibleDatesCount] = useState(10);
-  const [availableDates, setAvailableDates] = useState([]);
-  const [displayedDates, setDisplayedDateRange] = useState([]);
-  const APPOINTMENT_DISPLAY_LIMIT = 5;
+  const [showFAQ, setShowFAQ] = useState(false);
+  const [showServices, setShowServices] = useState(false);
+  const [showLocation, setShowLocation] = useState(false);
+  
+  // SOLUCIÓN: Almacenar los horarios disponibles por fecha para mantener consistencia
+  const [availableTimesByDate, setAvailableTimesByDate] = useState({});
 
-  // Servicios y horarios (actualizados para junio)
+  // Servicios y precios
   const services = {
     'Corte de cabello': 5,
     'Arreglo de barba': 3,
     'Corte + barba': 7,
-    'Tratamiento de barba': 2
+    'Tratamiento de barba': 2,
+    'Corte + barba + refrigerio': 9,
+    'Corte + barba + masaje': 12,
+    'Corte + refrigerio': 7
   };
 
-  // Fechas disponibles en formato DD/MM (corregido para junio)
-  const availableSlots = {
-    '03/06': ['10:00 AM', '2:00 PM'],
-    '04/06': ['9:00 AM', '3:00 PM'],
-    '05/06': ['11:00 AM', '4:00 PM']
+  // Preguntas frecuentes
+  const faqs = [
+    {
+      question: "¿Cuál es el horario de atención?",
+      answer: "Nuestro horario es de lunes a sábado de 9:00 AM a 7:00 PM."
+    },
+    {
+      question: "¿Necesito cita previa?",
+      answer: "Recomendamos agendar cita para garantizar atención inmediata, pero también aceptamos clientes sin cita previa según disponibilidad."
+    },
+    {
+      question: "¿Cuáles son los métodos de pago?",
+      answer: "Aceptamos efectivo, tarjetas de crédito/débito, transferencias y pagos móviles."
+    },
+    {
+      question: "¿Ofrecen servicios a domicilio?",
+      answer: "Por el momento, todos nuestros servicios son exclusivamente en nuestra barbería."
+    }
+  ];
+
+  // Información de ubicación y contacto
+  const locationInfo = {
+    address: "Caracas / VE",
+    phone: "+584122911866",
+    email: "medinabarber1@gmail.com"
   };
 
   // Helper para desplazamiento automático
@@ -39,6 +82,16 @@ function ChatbotWidget({ onOpenAppointmentModal }) {
     scrollToBottom();
   }, [messages]);
 
+  // Auto-apertura del chatbot después de un tiempo
+  useEffect(() => {
+    if (autoOpen && !isOpen) {
+      const timer = setTimeout(() => {
+        setIsOpen(true);
+      }, autoOpenDelay);
+      return () => clearTimeout(timer);
+    }
+  }, [autoOpen, isOpen, autoOpenDelay]);
+
   // Mensaje de bienvenida
   useEffect(() => {
     if (isOpen && messages.length === 0) {
@@ -47,30 +100,6 @@ function ChatbotWidget({ onOpenAppointmentModal }) {
       }, 500);
     }
   }, [isOpen, messages.length]);
-  const fetchAvailableDates = async () => {
-        // En un escenario real, harías una llamada a tu API aquí
-        // Por ahora, simulamos algunas fechas futuras
-        const dates = [];
-        const today = new Date();
-        for (let i = 0; i < 30; i++) { // Generar 30 días futuros
-            const futureDate = new Date();
-            futureDate.setDate(today.getDate() + i);
-            dates.push({
-                day: futureDate.getDate(),
-                month: futureDate.getMonth(), // 0-indexed
-                year: futureDate.getFullYear(),
-                formatted: futureDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'numeric' }), // Formato "D/M"
-                fullFormatted: futureDate.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), // Formato "lunes, 3 de junio de 2025"
-            });
-        }
-        setAvailableDates(dates);
-    };
-  useEffect(() => {
-    if (isOpen) {
-      fetchAvailableDates(); // Carga las fechas cuando el chatbot se abre
-      }
-  }, [isOpen]);
-
 
   const addMessage = (sender, text) => {
     setMessages((prevMessages) => [...prevMessages, { sender, text }]);
@@ -85,7 +114,7 @@ function ChatbotWidget({ onOpenAppointmentModal }) {
     processBotResponse(userMessage);
   };
 
-  // FUNCIÓN CORREGIDA: handleConfirmAppointment
+  // Función para manejar la confirmación de cita
   const handleConfirmAppointment = () => {
     // Asegurarse de que selectedDate sea un objeto Date válido
     let dateToUse;
@@ -103,32 +132,57 @@ function ChatbotWidget({ onOpenAppointmentModal }) {
       addMessage('bot', '❌ Error al procesar la fecha. Por favor, intenta nuevamente.');
       return;
     }
-    if (selectedDateFromChat) {
-        onOpenAppointmentModal(selectedDateFromChat.day, selectedDateFromChat.month, selectedDateFromChat.year);
-        // ... (resto de tu lógica)
-    } else {
-        addMessage('bot', 'No se ha seleccionado una fecha válida. Por favor, intenta de nuevo.');
-    }
-
     
-    if (onOpenAppointmentModal) {
-      onOpenAppointmentModal({
-        date: dateToUse,
-        service: selectedService,
-        userName: userName
+    // Crear objeto con datos de la cita
+    const appointmentData = {
+      date: dateToUse,
+      time: selectedTime,
+      service: selectedService,
+      userName: userName,
+      userEmail: userEmail,
+      userPhone: userPhone
+    };
+    
+    try {
+      // Enviar notificaciones
+      sendEmailNotification({
+        to: userEmail,
+        subject: "Confirmación de cita - Medina Barber",
+        body: `Hola ${userName}, tu cita para ${selectedService} ha sido confirmada para el ${formatDateForUser(dateToUse)} a las ${selectedTime}.`
       });
+      
+      sendEmailNotification({
+        to: "admin@medinabarber.com",
+        subject: "Nueva cita agendada",
+        body: `Nueva cita: ${userName} (${userEmail}, ${userPhone}) ha agendado ${selectedService} para el ${formatDateForUser(dateToUse)} a las ${selectedTime}.`
+      });
+      
+      sendWhatsAppNotification({
+        to: "+1234567890", // Número del administrador
+        message: `Nueva cita: ${userName} ha agendado ${selectedService} para el ${formatDateForUser(dateToUse)} a las ${selectedTime}.`
+      });
+    } catch (error) {
+      console.error('Error al enviar notificaciones:', error);
+      // No interrumpir el flujo si las notificaciones fallan
+    }
+    
+    // Guardar en el sistema y abrir modal si es necesario
+    if (onOpenAppointmentModal) {
+      onOpenAppointmentModal(appointmentData);
     }
   };
 
-  // FUNCIÓN MEJORADA: parseUserDate
+  // Función para parsear fechas
   const parseUserDate = (userInput) => {
+    if (!userInput) return null;
+    
     const today = new Date();
     const currentYear = today.getFullYear();
     const input = userInput.toLowerCase().trim();
     
     // Caso especial: "ver más"
     if (input === 'ver más') {
-      return 'ver_mas'; // Valor especial para manejar este caso
+      return 'ver_mas';
     }
     
     // 1. Fechas relativas
@@ -178,280 +232,402 @@ function ChatbotWidget({ onOpenAppointmentModal }) {
     return null; // Fecha no válida
   };
 
-  const parseDateInput = (input) => {
-        const lowerCaseInput = input.toLowerCase();
-        const today = new Date();
-        let targetDate = null;
-
-        if (lowerCaseInput.includes('hoy')) {
-            targetDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        } else if (lowerCaseInput.includes('mañana')) {
-            targetDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-        } else {
-            // Intentar parsear "D/M" o "D de Mes"
-            const parts = lowerCaseInput.match(/(\d{1,2})[/\sde\s]*(\d{1,2}|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)/);
-            if (parts) {
-                let day = parseInt(parts[1], 10);
-                let month;
-                if (isNaN(parts[2])) { // Si es un nombre de mes
-                    const monthNames = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-                    month = monthNames.indexOf(parts[2]);
-                } else { // Si es un número de mes
-                    month = parseInt(parts[2], 10) - 1; // 0-indexed
-                }
-
-                if (!isNaN(day) && month !== -1) {
-                    let year = today.getFullYear();
-                    // Si el mes es anterior al actual, asumimos el próximo año
-                    if (month < today.getMonth() && day > today.getDate()) {
-                         // No cambiar de año automáticamente a menos que el mes sea muy atrás
-                         // Por simplicidad, asumimos el año actual por ahora.
-                    } else if (month < today.getMonth() && day <= today.getDate()) {
-                        year = today.getFullYear() + 1; // Para el caso de "3 de enero" en diciembre
-                    }
-
-                    targetDate = new Date(year, month, day);
-
-                    // Validar si la fecha está en el pasado (excepto si es hoy)
-                    if (targetDate.setHours(0,0,0,0) < today.setHours(0,0,0,0)) {
-                        targetDate = new Date(year + 1, month, day); // Prueba con el próximo año
-                        if (targetDate.setHours(0,0,0,0) < today.setHours(0,0,0,0)) {
-                            targetDate = null; // Aún en el pasado, inválida
-                        }
-                    }
-
-                }
-            }
-        }
-
-        if (targetDate && !isNaN(targetDate.getTime())) {
-            return {
-                day: targetDate.getDate(),
-                month: targetDate.getMonth(), // 0-indexed
-                year: targetDate.getFullYear(),
-                formatted: targetDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'numeric' }),
-                fullFormatted: targetDate.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
-            };
-        }
-        return null;
-    };
-
-    const parseTimeInput = (input) => {
-        // Ejemplo simple para parsear "10:00", "10 am", "2 pm"
-        const lowerCaseInput = input.toLowerCase();
-        const match = lowerCaseInput.match(/(\d{1,2})(:\d{2})?\s*(a\.?m\.?|p\.?m\.?)?/);
-        if (match) {
-            let hour = parseInt(match[1], 10);
-            let minutes = match[2] ? parseInt(match[2].substring(1), 10) : 0;
-            const ampm = match[3];
-
-            if (ampm && ampm.includes('p')) {
-                if (hour < 12) hour += 12; // Convertir a formato 24h
-            } else if (ampm && ampm.includes('a') && hour === 12) {
-                hour = 0; // Medianoche
-            }
-            return `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-        }
-        return null;
-    };
-
-
+  // Generar fechas disponibles
   const generateAvailableDates = () => {
     const today = new Date();
     const endDate = new Date();
     endDate.setMonth(today.getMonth() + 3);
     const available = {};
+    
+    // Generar fechas para los próximos 3 meses
     for (let d = new Date(today); d <= endDate; d.setDate(d.getDate() + 1)) {
+      // Excluir domingos
       if (d.getDay() !== 0) {
-        const dateKey = `${d.getDate()}/${d.getMonth() + 1}`;
+        // Formato DD/MM para consistencia
+        const day = d.getDate();
+        const month = d.getMonth() + 1;
+        const dateKey = `${day < 10 ? '0' + day : day}/${month < 10 ? '0' + month : month}`;
         available[dateKey] = ['9:00 AM', '11:00 AM', '2:00 PM', '4:00 PM'];
       }
     }
+    
+    // Limitar según visibleDatesCount
     return Object.fromEntries(
       Object.entries(available).slice(0, visibleDatesCount)
     );
   };
 
-  // Formatear fecha para mostrar al usuario
-  const formatDateForUser = (date) => {
-    return date.toLocaleDateString('es-ES', { 
-      weekday: 'long', 
-      day: 'numeric', 
-      month: 'long' 
-    });
+  // SOLUCIÓN: Función mejorada para obtener horarios disponibles de manera consistente
+  const getAvailableTimes = (date) => {
+    if (!date) return [];
+    
+    // Crear una clave única para la fecha
+    const dateKey = date instanceof Date 
+      ? `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
+      : String(date);
+    
+    // Si ya tenemos horarios generados para esta fecha, usarlos
+    if (availableTimesByDate[dateKey]) {
+      return availableTimesByDate[dateKey];
+    }
+    
+    // Si no, generar nuevos horarios (fijos, no aleatorios)
+    const allTimes = ['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM'];
+    
+    // En una implementación real, esto vendría de una API o base de datos
+    // Para este ejemplo, usamos un patrón fijo basado en el día de la semana para simular disponibilidad
+    const dateObj = date instanceof Date ? date : new Date(date);
+    const dayOfWeek = dateObj.getDay(); // 0 = domingo, 1 = lunes, etc.
+    
+    // Seleccionar horarios basados en el día de la semana (para que sea determinista)
+    let availableTimes;
+    switch (dayOfWeek) {
+      case 1: // Lunes
+        availableTimes = ['9:00 AM', '11:00 AM', '2:00 PM', '4:00 PM', '6:00 PM'];
+        break;
+      case 2: // Martes
+        availableTimes = ['10:00 AM', '12:00 PM', '3:00 PM', '5:00 PM'];
+        break;
+      case 3: // Miércoles
+        availableTimes = ['9:00 AM', '10:00 AM', '2:00 PM', '4:00 PM'];
+        break;
+      case 4: // Jueves
+        availableTimes = ['10:00 AM', '11:00 AM', '12:00 PM', '2:00 PM', '4:00 PM'];
+        break;
+      case 5: // Viernes
+        availableTimes = ['9:00 AM', '11:00 AM', '3:00 PM', '5:00 PM'];
+        break;
+      case 6: // Sábado
+        availableTimes = ['10:00 AM', '12:00 PM', '2:00 PM'];
+        break;
+      default:
+        availableTimes = ['9:00 AM', '11:00 AM', '2:00 PM', '4:00 PM'];
+    }
+    
+    // Almacenar los horarios generados para esta fecha
+    setAvailableTimesByDate(prev => ({
+      ...prev,
+      [dateKey]: availableTimes
+    }));
+    
+    return availableTimes;
   };
 
-  // FUNCIÓN MEJORADA: processBotResponse
-  const processBotResponse = async (userMessage) => {
+  // Formatear fecha para mostrar al usuario
+  const formatDateForUser = (date) => {
+    if (!date) return "Fecha no seleccionada";
+    
+    try {
+      const dateObj = date instanceof Date ? date : new Date(date);
+      if (isNaN(dateObj.getTime())) {
+        return "Fecha inválida";
+      }
+      
+      return dateObj.toLocaleDateString('es-ES', { 
+        weekday: 'long', 
+        day: 'numeric', 
+        month: 'long' 
+      });
+    } catch (error) {
+      console.error("Error al formatear fecha:", error);
+      return "Error al formatear fecha";
+    }
+  };
+
+  // Validar formato de email
+  const isValidEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
+  // Validar formato de teléfono
+  const isValidPhone = (phone) => {
+    const re = /^\+?[0-9]{8,15}$/;
+    return re.test(phone);
+  };
+
+  // Mostrar preguntas frecuentes
+  const showFAQs = () => {
+    let faqText = "📋 Preguntas Frecuentes:\n\n";
+    faqs.forEach((faq, index) => {
+      faqText += `${index + 1}. ${faq.question}\n${faq.answer}\n\n`;
+    });
+    faqText += "¿En qué más puedo ayudarte?";
+    addMessage('bot', faqText);
+    setShowFAQ(false);
+  };
+
+  // Mostrar servicios
+  const showServicesList = () => {
+    let servicesText = "💈 Nuestros servicios:\n\n";
+    Object.entries(services).forEach(([service, price]) => {
+      servicesText += `• ${service}: $${price}\n`;
+    });
+    servicesText += "\n¿Te gustaría agendar una cita para alguno de estos servicios?";
+    addMessage('bot', servicesText);
+    setShowServices(false);
+  };
+
+  // Mostrar ubicación y contacto
+  const showLocationInfo = () => {
+    let locationText = "📍 Ubicación y Contacto:\n\n";
+    locationText += `Dirección: ${locationInfo.address}\n`;
+    locationText += `Teléfono: ${locationInfo.phone}\n`;
+    locationText += `Email: ${locationInfo.email}\n`;
+    locationText += "¿En qué más puedo ayudarte?";
+    addMessage('bot', locationText);
+    setShowLocation(false);
+  };
+
+  // Procesamiento de respuestas
+  const processBotResponse = (userMessage) => {
     let botResponse = '';
     let nextStep = conversationStep;
     
+    // Verificar si se solicitan FAQs, servicios o ubicación en cualquier momento
+    if (/pregunta|duda|faq/i.test(userMessage)) {
+      setShowFAQ(true);
+      showFAQs();
+      return;
+    } else if (/servicio|precio|costo|valor/i.test(userMessage) && conversationStep !== 3) {
+      setShowServices(true);
+      showServicesList();
+      return;
+    } else if (/ubicación|ubicacion|dirección|direccion|donde|dónde|contacto|teléfono|telefono/i.test(userMessage)) {
+      setShowLocation(true);
+      showLocationInfo();
+      return;
+    }
+    
     switch (conversationStep) {
-      case 0: // Saludo inicial
-        if (lowerCaseMessage.includes('agendar') || lowerCaseMessage.includes('cita')) {
-          botResponse = '¡Claro! Te guiaré para agendar tu cita.';
-          nextStep = 1; // Preguntar por la acción
-        } else if (lowerCaseMessage.includes('pregunta') || lowerCaseMessage.includes('duda')) {
-          botResponse = 'Estoy aquí para ayudarte con agendamientos. Para otras preguntas, puedes contactarnos directamente al +58 412-2911866.';
-          nextStep = 0;
-        } else if (lowerCaseMessage.includes('horarios') || lowerCaseMessage.includes('disponibilidad')) {
-          addMessage('bot', 'Consultando horarios disponibles...');
-          // Pasamos a un nuevo paso para mostrar los horarios disponibles
-          nextStep = 3;
-          setTimeout(() => processBotResponse('show_schedules'), 500); // Llama a la siguiente lógica para mostrar horarios
-            return; // Importante para evitar que se procese el caso 1 inmediatamente
-        } else {
-          botResponse = 'No entendí eso. ¿Te gustaría agendar una cita o consultar horarios?';
-          nextStep = 0;
+      case 0: // Paso 0: Pedir nombre
+        setUserName(userMessage);
+        botResponse = `¡Hola, ${userMessage}! Soy el asistente virtual de Medina Barber. ¿En qué puedo ayudarte hoy?\n\n• Agendar cita\n• Ver servicios\n• Preguntas frecuentes\n• Ubicación y contacto`;
+        nextStep = 1;
+        break;
+        
+      case 1: // Paso 1: Menú principal
+        if (/agendar|cita|reserva|reservar/i.test(userMessage)) {
+          // Generar fechas disponibles con formato consistente
+          const availableDates = generateAvailableDates();
+          botResponse = `📅 Selecciona una fecha disponible hasta ${new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}:\n\n${
+            Object.keys(availableDates).map(date => `• ${date}`).join('\n')
+          }\n\nO escribe "ver más" para cargar próximas fechas.`;
+          nextStep = 2;
+        } 
+        else if (/servicio|precio/i.test(userMessage)) {
+          showServicesList();
+          nextStep = 1;
+        }
+        else if (/pregunta|duda|faq/i.test(userMessage)) {
+          showFAQs();
+          nextStep = 1;
+        }
+        else if (/ubicación|ubicacion|dirección|direccion|donde|dónde|contacto/i.test(userMessage)) {
+          showLocationInfo();
+          nextStep = 1;
+        }
+        else if (/horario|hora/i.test(userMessage)) {
+          // Mostrar todas las fechas disponibles con sus horarios
+          const availableDates = generateAvailableDates();
+          botResponse = `⏰ Horarios disponibles:\n${
+            Object.entries(availableDates)
+              .slice(0, 5) // Limitar a 5 fechas para no saturar
+              .map(([date, slots]) => `• ${date}: ${slots.join(', ')}`)
+              .join('\n')
+          }\n\n¿Quieres agendar una cita?`;
+          nextStep = 1;
+        }
+        else {
+          botResponse = 'No entendí. Por favor elige una opción:\n\n• Agendar cita\n• Ver servicios\n• Preguntas frecuentes\n• Ubicación y contacto';
+          nextStep = 1;
         }
         break;
         
-      case 1: // Después de "agendar" - Preguntar si quiere ver calendario o preguntar fecha
-                if (lowerCaseMessage.includes('agendar')) { // Si el usuario vuelve a decir agendar
-                    botResponse = '¿Quieres que abra el calendario para que elijas la fecha, o prefieres que te muestre las fechas disponibles aquí en el chat?';
-                    nextStep = 2;
-                } else {
-                    botResponse = '¿Cómo te gustaría agendar? ¿Quieres que te muestre las fechas disponibles o abro el calendario directamente?';
-                    nextStep = 2;
-                }
-                break;
-
-            case 2: // Preguntar si quiere ver fechas en chat o abrir calendario
-                if (lowerCaseMessage.includes('calendario') || lowerCaseMessage.includes('abrir')) {
-                    addMessage('bot', '¡Entendido! Abriendo el formulario de agendamiento...');
-                    setTimeout(() => {
-                        onOpenAppointmentModal(new Date().getDate(), new Date().getMonth(), new Date().getFullYear()); // Abre el modal con la fecha actual
-                        setIsOpen(false); // Cierra el chat
-                        setMessages([]); // Limpia el chat
-                        setConversationStep(0); // Reinicia
-                    }, 1000);
-                    return; // Salir para no añadir otra respuesta de bot
-                } else if (lowerCaseMessage.includes('fechas') || lowerCaseMessage.includes('disponibles') || lowerCaseMessage.includes('mostrar')) {
-                    addMessage('bot', 'Consultando horarios disponibles...');
-                    nextStep = 3;
-                    setTimeout(() => processBotResponse('show_schedules'), 500); // Llama a la siguiente lógica para mostrar horarios
-                    return;
-                } else {
-                    botResponse = 'Por favor, dime si quieres "abrir calendario" o "mostrar fechas disponibles" aquí en el chat.';
-                    nextStep = 2;
-                }
-                break;
-
-            case 3: // Mostrar horarios disponibles (manejo de "show_schedules" y "ver más")
-                if (userMessage === 'show_schedules' || lowerCaseMessage.includes('ver más')) {
-                    let startIndex = displayedDateRange.start;
-                    let endIndex = displayedDateRange.end;
-
-                    if (lowerCaseMessage.includes('ver más')) {
-                        startIndex = displayedDateRange.end;
-                        endIndex = Math.min(availableDates.length, displayedDateRange.end + APPOINTMENT_DISPLAY_LIMIT);
-                    }
-
-                    if (startIndex >= availableDates.length) {
-                        botResponse = 'No hay más fechas disponibles por ahora. Intenta seleccionar una de las fechas mostradas o prueba otro día.';
-                        nextStep = 4; // Avanza para pedir selección de fecha
-                        break;
-                    }
-
-                    const datesToShow = availableDates.slice(startIndex, endIndex);
-                    if (datesToShow.length === 0) {
-                        botResponse = 'Lo siento, no hay fechas disponibles en este momento.';
-                        nextStep = 0; // Reinicia la conversación
-                    } else {
-                        const dateOptions = datesToShow.map(date => `• ${date.formatted}`);
-                        botResponse = `📅 Selecciona una fecha (ej. "4/6" o "mañana"): \n${dateOptions.join('\n')}`;
-
-                        if (endIndex < availableDates.length) {
-                            botResponse += '\nO escribe "ver más" para cargar próximas fechas.';
-                        }
-                        setDisplayedDateRange({ start: startIndex, end: endIndex });
-                        nextStep = 4; // Espera la selección de fecha
-                    }
-                } else {
-                    // Esta lógica debería manejar la entrada de la fecha
-                    nextStep = 4; // Asumimos que si no es 'show_schedules' o 'ver más', es un intento de fecha
-                    // La lógica para parsear la fecha se moverá a case 4.
-                    return processBotResponse(userMessage); // Re-procesar el mensaje en el caso 4
-                }
-                break;
-
-            case 4: // Esperando selección de fecha por parte del usuario
-                // Lógica para parsear la fecha ingresada por el usuario
-                const parsedDate = parseDateInput(userMessage);
-
-                if (parsedDate) {
-                    setSelectedDateFromChat(parsedDate); // Guarda la fecha parseada
-                    // Buscar horarios disponibles para esa fecha específica
-                    const formattedDateForDisplay = parsedDate.fullFormatted; // Formato completo para el usuario
-                    const demoTimeSlots = ['10:00 AM', '11:00 AM', '02:00 PM', '03:00 PM']; // Simulamos horarios
-                    botResponse = `Horarios disponibles para ${formattedDateForDisplay}: \n${demoTimeSlots.map(t => `• ${t}`).join('\n')}\nPor favor, selecciona una hora (ej. "10:00 AM").`;
-                    nextStep = 5; // Espera la hora
-                } else if (lowerCaseMessage.includes('ver más')) {
-                    // Si el usuario escribe "ver más" en el caso 4, volvemos a procesar en el caso 3
-                    nextStep = 3;
-                    return processBotResponse('ver más');
-                } else {
-                    botResponse = '❌ No entendí la fecha. Por favor, intenta un formato como: "4/6", "mañana", "3 de junio", o "hoy".';
-                    nextStep = 4; // Permanece en el mismo paso para reintentar la fecha
-                }
-                break;
-
-            case 5: // Esperando selección de hora
-                // Lógica para parsear la hora ingresada por el usuario
-                const selectedHour = parseTimeInput(userMessage);
-                if (selectedHour && selectedDateFromChat) {
-                    setAppointmentDetails({
-                        ...selectedDateFromChat, // Ya tiene day, month, year
-                        time: selectedHour,
-                    });
-                    botResponse = `Perfecto. Tu cita para el ${selectedDateFromChat.fullFormatted} a las ${selectedHour} está casi lista. ¿Quieres confirmar? (Sí/No)`;
-                    nextStep = 6; // Espera confirmación
-                } else {
-                    botResponse = '❌ No entendí la hora. Por favor, selecciona una hora de las disponibles (ej. "10:00 AM").';
-                    nextStep = 5; // Permanece en el mismo paso
-                }
-                break;
-
-            case 6: // Esperando confirmación de la cita
-                if (lowerCaseMessage.includes('sí') || lowerCaseMessage.includes('si') || lowerCaseMessage.includes('confirmar')) {
-                    addMessage('bot', '¡Excelente! Abriendo el formulario de agendamiento para finalizar los detalles.');
-                    setTimeout(() => {
-                        if (onOpenAppointmentModal && appointmentDetails) {
-                            onOpenAppointmentModal(
-                                appointmentDetails.day,
-                                appointmentDetails.month,
-                                appointmentDetails.year
-                            );
-                            setIsOpen(false);
-                            setMessages([]);
-                            setConversationStep(0); // Reinicia la conversación
-                            setAppointmentDetails(null); // Limpia los detalles
-                        }
-                    }, 1000);
-                    return;
-                } else if (lowerCaseMessage.includes('no') || lowerCaseMessage.includes('cancelar')) {
-                    botResponse = 'Cita cancelada. ¿Hay algo más en lo que pueda ayudarte?';
-                    nextStep = 0; // Reinicia
-                    setAppointmentDetails(null);
-                } else {
-                    botResponse = '¿Sí o No?';
-                    nextStep = 6;
-                }
-                break;
-
-            default:
-                botResponse = 'Lo siento, no entendí. ¿Te gustaría agendar una cita o consultar horarios?';
-                nextStep = 0;
-                break;
+      case 2: // Selección de fecha
+        // Manejar específicamente el caso "ver más"
+        if (userMessage.toLowerCase().trim() === 'ver más') {
+          setVisibleDatesCount(prev => prev + 10);
+          const availableDates = generateAvailableDates();
+          botResponse = `📅 Más fechas disponibles:\n\n${
+            Object.keys(availableDates).map(date => `• ${date}`).join('\n')
+          }\n\n¿Qué día prefieres? (O escribe "ver más" para continuar)`;
+          nextStep = 2;
+          break;
         }
-        if (botResponse) {
-            setTimeout(() => {
-                addMessage('bot', botResponse);
-                setConversationStep(nextStep);
-            }, 500);
+        
+        const parsedDate = parseUserDate(userMessage);
+        
+        // Si es un valor especial "ver_mas", ya lo manejamos arriba
+        if (parsedDate === 'ver_mas') {
+          break;
         }
-    };
-
+        
+        if (parsedDate) {
+          setSelectedDate(parsedDate);
+          const formattedDate = formatDateForUser(parsedDate);
+          
+          // SOLUCIÓN: Usar la función mejorada para obtener horarios consistentes
+          const availableTimes = getAvailableTimes(parsedDate);
+          
+          botResponse = `🗓️ Has seleccionado ${formattedDate}. Estos son los horarios disponibles:\n\n${
+            availableTimes.map(time => `• ${time}`).join('\n')
+          }\n\n¿Qué horario prefieres?`;
+          nextStep = 2.5; // Nuevo paso para selección de horario
+        } else {
+          botResponse = '❌ No entendí la fecha. Por favor, usa:\n• "03/06"\n• "mañana"\n• "3 de junio"\n• O escribe "ver más" para más fechas';
+          nextStep = 2;
+        }
+        break;
+        
+      case 2.5: // Selección de horario
+        // SOLUCIÓN: Usar los horarios almacenados para la fecha seleccionada
+        const availableTimes = getAvailableTimes(selectedDate);
+        
+        // Verificar si el horario proporcionado está en la lista de disponibles
+        // Usamos una comparación flexible para permitir variaciones en el formato
+        const selectedTimeMatch = availableTimes.find(time => 
+          time.toLowerCase().replace(/\s+/g, '') === userMessage.toLowerCase().replace(/\s+/g, '') ||
+          time.toLowerCase().includes(userMessage.toLowerCase())
+        );
+        
+        if (selectedTimeMatch) {
+          setSelectedTime(selectedTimeMatch);
+          botResponse = `⏰ Has seleccionado las ${selectedTimeMatch}. ¿Qué servicio deseas?\n\n${
+            Object.keys(services).map(service => `• ${service}`).join('\n')
+          }`;
+          nextStep = 3;
+        } else {
+          botResponse = `❌ Horario no válido. Por favor selecciona uno de los siguientes:\n\n${
+            availableTimes.map(time => `• ${time}`).join('\n')
+          }`;
+          nextStep = 2.5;
+        }
+        break;
+        
+      case 3: // Selección de servicio
+        const serviceKey = Object.keys(services).find(service => 
+          userMessage.toLowerCase().includes(service.toLowerCase())
+        );
+        
+        if (serviceKey) {
+          setSelectedService(serviceKey);
+          botResponse = "📧 Por favor, proporciona tu correo electrónico para enviarte la confirmación:";
+          nextStep = 3.5; // Nuevo paso para solicitar email
+        } else {
+          botResponse = '❌ Servicio no válido. Elige uno:\n\n' + Object.keys(services).map(s => `• ${s}`).join('\n');
+          nextStep = 3;
+        }
+        break;
+        
+      case 3.5: // Solicitar email
+        if (isValidEmail(userMessage)) {
+          setUserEmail(userMessage);
+          botResponse = "📱 Por favor, proporciona tu número de teléfono para contactarte:";
+          nextStep = 3.7; // Nuevo paso para solicitar teléfono
+        } else {
+          botResponse = "❌ El formato del correo electrónico no es válido. Por favor, intenta nuevamente:";
+          nextStep = 3.5;
+        }
+        break;
+        
+      case 3.7: // Solicitar teléfono
+        if (isValidPhone(userMessage)) {
+          setUserPhone(userMessage);
+          
+          // Asegurarse de que selectedDate sea un objeto Date válido para formatear
+          let dateDisplay = "Fecha no seleccionada";
+          if (selectedDate) {
+            try {
+              const dateObj = selectedDate instanceof Date ? selectedDate : new Date(selectedDate);
+              if (!isNaN(dateObj.getTime())) {
+                dateDisplay = formatDateForUser(dateObj);
+              }
+            } catch (error) {
+              console.error("Error al formatear fecha:", error);
+            }
+          }
+          
+          botResponse = `📋 Resumen de cita:\n\n• Nombre: ${userName}\n• Email: ${userEmail}\n• Teléfono: ${userPhone}\n• Fecha: ${dateDisplay}\n• Hora: ${selectedTime}\n• Servicio: ${selectedService} ($${services[selectedService]})\n\n¿Confirmar? (Sí/No)`;
+          nextStep = 5;
+        } else {
+          botResponse = "❌ El formato del número de teléfono no es válido. Por favor, intenta nuevamente:";
+          nextStep = 3.7;
+        }
+        break;
+        
+      case 4: // Paso 4: Upselling
+        if (/s[iíí]/i.test(userMessage)) {
+          setSelectedService(prev => `${prev} + tratamiento de barba`);
+          botResponse = '✨ ¡Tratamiento añadido! Total: $' + (services[selectedService] + 2);
+        } else {
+          botResponse = '✅ Servicio confirmado: ' + selectedService;
+        }
+        nextStep = 5;
+        break;
+        
+      case 5: // Confirmación final
+        if (/s[iíí]/i.test(userMessage)) {
+          botResponse = '✅ ¡Cita agendada con éxito! Te hemos enviado un correo con los detalles de tu cita.\n\nRecibirás un recordatorio 24 horas antes de tu cita.\n\n¿Necesitas algo más? (Sí/No)';
+          
+          try {
+            handleConfirmAppointment(); // Enviar datos y notificaciones
+          } catch (error) {
+            console.error('Error al confirmar cita:', error);
+            // No interrumpir el flujo si hay un error
+          }
+          
+          nextStep = 6;
+        } else {
+          botResponse = '¿Qué deseas modificar?\n• Fecha y hora\n• Servicio\n• Datos de contacto';
+          nextStep = 5.5;
+        }
+        break;
+        
+      case 5.5: // Modificación de datos
+        if (/fecha|hora|tiempo/i.test(userMessage)) {
+          const availableDates = generateAvailableDates();
+          botResponse = `📅 Selecciona una nueva fecha:\n\n${
+            Object.keys(availableDates).map(date => `• ${date}`).join('\n')
+          }\n\nO escribe "ver más" para cargar próximas fechas.`;
+          nextStep = 2;
+        } 
+        else if (/servicio/i.test(userMessage)) {
+          botResponse = `💈 Selecciona un nuevo servicio:\n\n${
+            Object.keys(services).map(service => `• ${service}`).join('\n')
+          }`;
+          nextStep = 3;
+        }
+        else if (/datos|contacto|email|correo|teléfono|telefono/i.test(userMessage)) {
+          botResponse = "📧 Por favor, proporciona tu correo electrónico:";
+          nextStep = 3.5;
+        }
+        else {
+          botResponse = '❌ No entendí. ¿Qué deseas modificar?\n• Fecha y hora\n• Servicio\n• Datos de contacto';
+          nextStep = 5.5;
+        }
+        break;
+        
+      case 6: // Cierre
+        if (/no/i.test(userMessage)) {
+          botResponse = '👋 ¡Gracias por agendar con Medina Barber! El chat se cerrará en 3 segundos.';
+          setTimeout(() => setIsOpen(false), 3000);
+        } else {
+          botResponse = '¿En qué más puedo ayudarte?\n• Agendar nueva cita\n• Ver servicios\n• Preguntas frecuentes\n• Ubicación y contacto';
+          nextStep = 1;
+        }
+        break;
+        
+      default:
+        botResponse = '¿En qué puedo ayudarte?';
+        nextStep = 1;
+    }
+    
+    setTimeout(() => {
+      addMessage('bot', botResponse);
+      setConversationStep(nextStep);
+    }, 500);
+  };
 
   return (
     <div className={`chatbot-widget ${isOpen ? 'open' : ''}`}>

@@ -1,236 +1,187 @@
-/* ChatbotWidget.css */
+/* Estilos para el ChatbotWidget */
 .chatbot-widget {
   position: fixed;
   bottom: 20px;
   right: 20px;
   z-index: 1000;
-  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .chatbot-toggle {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background-color: #0D1B2A; /* Color de fondo oscuro */
+  background-color: #0D1B2A; /* Color marrón que coincide con la estética de barbería */
   color: white;
   border: none;
-  font-size: 16px;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
+  font-size: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.3s ease;
 }
 
 .chatbot-toggle:hover {
-  background-color: #1B263B;
+  background-color: #0D1B2A; /* Marrón más claro al pasar el mouse */
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .chatbot-container {
   position: absolute;
-  bottom: 70px;
+  bottom: 80px;
   right: 0;
-  width: 320px;
-  height: 400px;
+  width: 350px;
+  height: 500px;
   background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transform-origin: bottom right;
-  animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+  transition: all 0.3s ease;
 }
 
 .chatbot-header {
-  background-color: #0D1B2A;
+  background-color: #0D1B2A; /* Color marrón que coincide con la estética de barbería */
   color: white;
-  padding: 12px 16px;
+  padding: 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 }
 
 .chatbot-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
 }
 
 .chatbot-header button {
-  background: none;
+  background: transparent;
   border: none;
   color: white;
   font-size: 18px;
   cursor: pointer;
-  padding: 0;
-  line-height: 1;
-  transition: transform 0.2s;
-}
-
-.chatbot-header button:hover {
-  transform: scale(1.1);
 }
 
 .chatbot-messages {
   flex: 1;
-  padding: 12px;
+  padding: 15px;
   overflow-y: auto;
-  background-color: #f8f9fa;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  background-color: #f5f5f5;
 }
 
 .message {
+  margin-bottom: 15px;
   max-width: 80%;
-  padding: 10px 14px;
+  padding: 10px 15px;
+  border-radius: 18px;
   line-height: 1.4;
-  font-size: 14px;
   word-wrap: break-word;
-  animation: messageAppear 0.2s ease-out;
-}
-
-@keyframes messageAppear {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.message.bot {
-  background: #ffffff;
-  border-radius: 15px 15px 15px 0;
-  align-self: flex-start;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  color: #333;
-  border: 1px solid #e0e0e0;
-}
-
-.message.user {
-  background: #0D1B2A;
-  border-radius: 15px 15px 0 15px;
-  align-self: flex-end;
-  color: white;
 }
 
 .message p {
-  margin: 4px 0;
+  margin: 5px 0;
 }
 
-.message p:first-child {
-  margin-top: 0;
+.message.bot {
+  background-color: #e6e6e6;
+  color: #333;
+  border-top-left-radius: 5px;
+  align-self: flex-start;
+  margin-right: auto;
 }
 
-.message p:last-child {
-  margin-bottom: 0;
+.message.user {
+  background-color: #0D1B2A; /* Color marrón que coincide con la estética de barbería */
+  color: white;
+  border-top-right-radius: 5px;
+  align-self: flex-end;
+  margin-left: auto;
 }
 
 .chatbot-input {
   display: flex;
-  border-top: 1px solid #e9ecef;
   padding: 10px;
   background-color: white;
+  border-top: 1px solid #e6e6e6;
 }
 
 .chatbot-input input {
   flex: 1;
-  padding: 10px 14px;
-  border: 1px solid #e0e0e0;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
   border-radius: 20px;
-  outline: none;
   font-size: 14px;
-  transition: all 0.2s;
-}
-
-.chatbot-input input:focus {
-  border-color: #0D1B2A;
-  box-shadow: 0 0 0 2px rgba(13, 27, 42, 0.1);
+  outline: none;
 }
 
 .chatbot-input button {
-  background-color: #0D1B2A;
+  background-color: #0D1B2A; /* Color marrón que coincide con la estética de barbería */
   color: white;
   border: none;
   border-radius: 20px;
-  padding: 10px 16px;
-  margin-left: 8px;
+  padding: 10px 15px;
+  margin-left: 10px;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s;
-  white-space: nowrap;
+  transition: background-color 0.3s;
 }
 
 .chatbot-input button:hover {
-  background-color: #1B263B;
-  transform: scale(0.98);
+  background-color: #0D1B2A; /* Marrón más claro al pasar el mouse */
 }
 
-/* Scrollbar styling */
-.chatbot-messages::-webkit-scrollbar {
-  width: 6px;
+/* Animaciones */
+.chatbot-widget.open .chatbot-toggle {
+  transform: rotate(180deg);
 }
 
-.chatbot-messages::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.chatbot-messages::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
+.chatbot-container {
+  animation: fadeIn 0.3s ease-out;
 }
 
-.chatbot-messages::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-/* Estilos para listas en los mensajes */
-.message ul, .message ol {
-  padding-left: 20px;
-  margin: 6px 0;
-}
-
-.message li {
-  margin-bottom: 4px;
-}
-
-/* Responsive adjustments */
+/* Estilos responsivos */
 @media (max-width: 480px) {
-  .chatbot-widget {
-    bottom: 15px;
-    right: 15px;
+  .chatbot-container {
+    width: 300px;
+    height: 450px;
+    bottom: 70px;
   }
   
   .chatbot-toggle {
     width: 50px;
     height: 50px;
-    font-size: 15px;
   }
-  
-  .chatbot-container {
-    width: calc(100vw - 30px);
-    right: 15px;
-    bottom: 70px;
-    max-height: 60vh;
-  }
+}
+
+/* Estilos para mensajes con botones de opciones */
+.message-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.option-button {
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 15px;
+  padding: 5px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.option-button:hover {
+  background-color: #e0e0e0;
 }
