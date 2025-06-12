@@ -32,6 +32,9 @@ function ChatbotWidget({ onOpenAppointmentModal, autoOpen = true, autoOpenDelay 
   const [showServices, setShowServices] = useState(false);
   const [showLocation, setShowLocation] = useState(false);
   
+  // NUEVO: Estado para controlar si el usuario cerró manualmente el chatbot
+  const [userHasClosed, setUserHasClosed] = useState(false);
+  
   // SOLUCIÓN: Almacenar los horarios disponibles por fecha para mantener consistencia
   const [availableTimesByDate, setAvailableTimesByDate] = useState({});
 
@@ -82,15 +85,15 @@ function ChatbotWidget({ onOpenAppointmentModal, autoOpen = true, autoOpenDelay 
     scrollToBottom();
   }, [messages]);
 
-  // Auto-apertura del chatbot después de un tiempo
+  // MODIFICADO: Auto-apertura del chatbot después de un tiempo (solo si el usuario no lo ha cerrado)
   useEffect(() => {
-    if (autoOpen && !isOpen) {
+    if (autoOpen && !isOpen && !userHasClosed) {
       const timer = setTimeout(() => {
         setIsOpen(true);
       }, autoOpenDelay);
       return () => clearTimeout(timer);
     }
-  }, [autoOpen, isOpen, autoOpenDelay]);
+  }, [autoOpen, isOpen, autoOpenDelay, userHasClosed]);
 
   // Mensaje de bienvenida
   useEffect(() => {
@@ -103,6 +106,22 @@ function ChatbotWidget({ onOpenAppointmentModal, autoOpen = true, autoOpenDelay 
 
   const addMessage = (sender, text) => {
     setMessages((prevMessages) => [...prevMessages, { sender, text }]);
+  };
+
+  // MODIFICADO: Función para manejar el cierre del chatbot
+  const handleCloseChatbot = () => {
+    setIsOpen(false);
+    setUserHasClosed(true); // Marcar que el usuario cerró manualmente
+  };
+
+  // MODIFICADO: Función para manejar la apertura manual del chatbot
+  const handleToggleChatbot = () => {
+    if (isOpen) {
+      handleCloseChatbot();
+    } else {
+      setIsOpen(true);
+      // No cambiar userHasClosed aquí, porque el usuario está abriendo manualmente
+    }
   };
 
   const handleSendMessage = (e) => {
@@ -361,7 +380,7 @@ function ChatbotWidget({ onOpenAppointmentModal, autoOpen = true, autoOpenDelay 
   const showServicesList = () => {
     let servicesText = "💈 Nuestros servicios:\n\n";
     Object.entries(services).forEach(([service, price]) => {
-      servicesText += `• ${service}: $${price}\n`;
+      servicesText += `• ${service}: ${price}\n`;
     });
     servicesText += "\n¿Te gustaría agendar una cita para alguno de estos servicios?";
     addMessage('bot', servicesText);
@@ -548,7 +567,7 @@ function ChatbotWidget({ onOpenAppointmentModal, autoOpen = true, autoOpenDelay 
             }
           }
           
-          botResponse = `📋 Resumen de cita:\n\n• Nombre: ${userName}\n• Email: ${userEmail}\n• Teléfono: ${userPhone}\n• Fecha: ${dateDisplay}\n• Hora: ${selectedTime}\n• Servicio: ${selectedService} ($${services[selectedService]})\n\n¿Confirmar? (Sí/No)`;
+          botResponse = `📋 Resumen de cita:\n\n• Nombre: ${userName}\n• Email: ${userEmail}\n• Teléfono: ${userPhone}\n• Fecha: ${dateDisplay}\n• Hora: ${selectedTime}\n• Servicio: ${selectedService} (${services[selectedService]})\n\n¿Confirmar? (Sí/No)`;
           nextStep = 5;
         } else {
           botResponse = "❌ El formato del número de teléfono no es válido. Por favor, intenta nuevamente:";
@@ -611,7 +630,7 @@ function ChatbotWidget({ onOpenAppointmentModal, autoOpen = true, autoOpenDelay 
       case 6: // Cierre
         if (/no/i.test(userMessage)) {
           botResponse = '👋 ¡Gracias por agendar con Medina Barber! El chat se cerrará en 3 segundos.';
-          setTimeout(() => setIsOpen(false), 3000);
+          setTimeout(() => handleCloseChatbot(), 3000);
         } else {
           botResponse = '¿En qué más puedo ayudarte?\n• Agendar nueva cita\n• Ver servicios\n• Preguntas frecuentes\n• Ubicación y contacto';
           nextStep = 1;
@@ -633,7 +652,7 @@ function ChatbotWidget({ onOpenAppointmentModal, autoOpen = true, autoOpenDelay 
     <div className={`chatbot-widget ${isOpen ? 'open' : ''}`}>
       <button 
         className="chatbot-toggle" 
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggleChatbot}
       >
         {isOpen ? '✕' : '💬 Chat'}
       </button>
@@ -641,7 +660,7 @@ function ChatbotWidget({ onOpenAppointmentModal, autoOpen = true, autoOpenDelay 
         <div className="chatbot-container">
           <div className="chatbot-header">
             <h3>Medina Barber</h3>
-            <button onClick={() => setIsOpen(false)}>✕</button>
+            <button onClick={handleCloseChatbot}>✕</button>
           </div>
           <div className="chatbot-messages">
             {messages.map((msg, index) => (
