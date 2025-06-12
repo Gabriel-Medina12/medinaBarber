@@ -169,11 +169,12 @@ function CalendarioCitas() {
     month = new Date().getMonth(),
     year = new Date().getFullYear()
   ) => {
-    const targetDate = new Date(year, month, day);
+    let targetDate = selectedDateFromChat || new Date();
     if (isNaN(targetDate.getTime())) {
       console.warn("Fecha inválida recibida del chatbot. Usando fecha actual.");
-      targetDate = new Date();
+      targetDate = new Date(); // Ahora funciona porque targetDate es 'let'
     }
+
 
     setSelectedDay(targetDate.getDate());
     setCurrentDate(new Date(targetDate.getFullYear(), targetDate.getMonth(), 1));
@@ -265,7 +266,7 @@ function CalendarioCitas() {
   };
 
   const handleOpenModalFromChatbot = useCallback((day, month, year) => {
-    const targetDate = new Date(year, month, day);
+    let targetDate = new Date(year, month, day);
     if (isNaN(targetDate.getTime())) {
       console.warn("Fecha inválida. Usando fecha actual.");
       targetDate = new Date();

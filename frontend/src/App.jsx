@@ -12,6 +12,7 @@ import Contacto from "./pages/contacto.jsx";
 import Agendar from "./pages/AgendarCitas.jsx";
 import Perfil from "./pages/perfil.jsx";
 import EditPerfil from "./pages/editPerfil.jsx";
+import ChatbotWidget from "./components/ChatbotWidget.jsx";
 
 // Importar componentes de administración
 import AdminDashboard from "./pages/admin/Dashboard.jsx";
@@ -157,6 +158,7 @@ function App() {
             {/* Ruta para manejar páginas no encontradas */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
+          <ChatbotWidget/>
           <Footer />
         </BrowserRouter>
       )}
