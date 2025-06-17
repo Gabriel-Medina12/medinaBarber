@@ -3,7 +3,7 @@ import '../ChatbotWidget.css';
 
 // Funciones de respaldo para cuando no está disponible el servicio de notificaciones
 const sendEmailNotification = (data) => {
-  fetch('https://hook.us1.make.com/abc123xyz456', {  // 🟡 Usa tu propia URL de webhook
+  fetch('https://hook.us2.make.com/xytv1m1ux84lynlmkbfkeq6u2n4yn4n6', {  // 🟡 Usa tu propia URL de webhook
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
