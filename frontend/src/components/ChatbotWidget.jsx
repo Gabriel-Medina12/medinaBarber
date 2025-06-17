@@ -3,8 +3,11 @@ import '../ChatbotWidget.css';
 
 // Funciones de respaldo para cuando no está disponible el servicio de notificaciones
 const sendEmailNotification = (data) => {
-  console.log('Simulando envío de email:', data);
-  // En producción, aquí se conectaría con un servicio real de emails
+  fetch('https://hook.us1.make.com/abc123xyz456', {  // 🟡 Usa tu propia URL de webhook
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }).then(res => console.log("Webhook enviado")).catch(err => console.error("Error:", err));
 };
 
 const sendWhatsAppNotification = (data) => {
