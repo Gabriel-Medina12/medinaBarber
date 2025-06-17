@@ -3,11 +3,13 @@ import '../ChatbotWidget.css';
 
 // Funciones de respaldo para cuando no está disponible el servicio de notificaciones
 const sendEmailNotification = (data) => {
-  fetch('https://hook.us2.make.com/xytv1m1ux84lynlmkbfkeq6u2n4yn4n6', {  // 🟡 Usa tu propia URL de webhook
+  fetch('https://hook.us2.make.com/xytv1m1ux84lynlmkbfkeq6u2n4yn4n6', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
-  }).then(res => console.log("Webhook enviado")).catch(err => console.error("Error:", err));
+  })
+  .then(res => console.log("✅ Webhook enviado a Make"))
+  .catch(err => console.error("❌ Error al enviar a Make:", err));
 };
 
 const sendWhatsAppNotification = (data) => {
