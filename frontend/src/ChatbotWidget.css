@@ -1,187 +1,277 @@
-/* Estilos para el ChatbotWidget */
+/* Estilos base */
+:root {
+  --primary-color: #3a2c1d; /* Marrón oscuro de barbería */
+  --secondary-color: #d4a76a; /* Dorado de barbería */
+  --accent-color: #8b5a2b; /* Marrón medio */
+  --light-color: #f5f5f5;
+  --dark-color: #1f1f1f;
+  --user-message: #e1f5fe; /* Azul claro para mensajes del usuario */
+  --bot-message: #ffffff; /* Blanco para mensajes del bot */
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --border-radius: 12px;
+}
+
+/* Widget principal */
 .chatbot-widget {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  z-index: 1000;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  z-index: 9999;
+  transition: all 0.3s ease;
 }
 
+/* Botón de toggle */
 .chatbot-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--primary-color);
+  border: none;
+  border-radius: 50%;
   width: 60px;
   height: 60px;
-  border-radius: 50%;
-  background-color: #0D1B2A; /* Color marrón que coincide con la estética de barbería */
-  color: white;
-  border: none;
+  padding: 0;
   cursor: pointer;
-  font-size: 16px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  z-index: 10000;
   transition: all 0.3s ease;
 }
 
 .chatbot-toggle:hover {
-  background-color: #0D1B2A; /* Marrón más claro al pasar el mouse */
-  transform: scale(1.05);
+  transform: scale(1.1);
+  background: var(--accent-color);
 }
 
+.chatbot-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Contenedor del chat */
 .chatbot-container {
-  position: absolute;
-  bottom: 80px;
-  right: 0;
   width: 350px;
   height: 500px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: all 0.3s ease;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  transform: translateY(10px);
+  opacity: 0;
+  animation: fadeInUp 0.3s ease forwards;
 }
 
+@keyframes fadeInUp {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Encabezado */
 .chatbot-header {
-  background-color: #0D1B2A; /* Color marrón que coincide con la estética de barbería */
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
   color: white;
-  padding: 15px;
+  padding: 12px 16px;
+  font-weight: bold;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  position: relative;
 }
 
-.chatbot-header h3 {
+.chatbot-header-icon {
+  height: 36px;
+  width: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 12px;
+  border: 2px solid var(--secondary-color);
+}
+
+.chatbot-title {
+  flex: 1;
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
+  color: white;
 }
 
-.chatbot-header button {
-  background: transparent;
+.chatbot-close {
+  background: none;
   border: none;
   color: white;
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
+  padding: 4px;
+  margin-left: 8px;
+  transition: transform 0.2s;
 }
 
+.chatbot-close:hover {
+  transform: scale(1.2);
+}
+
+/* Área de mensajes */
 .chatbot-messages {
   flex: 1;
-  padding: 15px;
+  padding: 16px;
   overflow-y: auto;
-  background-color: #f5f5f5;
+  background-color: var(--light-color);
+  background-image: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), 
+                    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path fill="%23d4a76a" fill-opacity="0.1" d="M30,10 Q50,5 70,10 Q95,20 90,40 Q85,65 70,80 Q50,95 30,80 Q15,65 10,40 Q5,20 30,10 Z"/></svg>');
+  background-size: 200px;
 }
 
+/* Estilos para los mensajes */
 .message {
-  margin-bottom: 15px;
-  max-width: 80%;
-  padding: 10px 15px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
   border-radius: 18px;
+  max-width: 80%;
+  font-size: 14px;
   line-height: 1.4;
+  position: relative;
   word-wrap: break-word;
+  animation: messageFadeIn 0.3s ease;
 }
 
-.message p {
-  margin: 5px 0;
+@keyframes messageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .message.bot {
-  background-color: #e6e6e6;
-  color: #333;
-  border-top-left-radius: 5px;
+  background-color: var(--bot-message);
+  color: var(--dark-color);
+  border-bottom-left-radius: 4px;
   align-self: flex-start;
-  margin-right: auto;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  border: 1px solid #eee;
 }
 
 .message.user {
-  background-color: #0D1B2A; /* Color marrón que coincide con la estética de barbería */
+  background-color: var(--primary-color);
   color: white;
-  border-top-right-radius: 5px;
+  border-bottom-right-radius: 4px;
   align-self: flex-end;
-  margin-left: auto;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+/* Área de entrada */
 .chatbot-input {
   display: flex;
-  padding: 10px;
-  background-color: white;
-  border-top: 1px solid #e6e6e6;
+  border-top: 1px solid #e0e0e0;
+  background: white;
+  padding: 8px;
 }
 
 .chatbot-input input {
   flex: 1;
-  padding: 10px 15px;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  font-size: 14px;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 24px;
   outline: none;
+  font-size: 14px;
+  margin-right: 8px;
+  transition: border 0.3s;
+}
+
+.chatbot-input input:focus {
+  border-color: var(--secondary-color);
 }
 
 .chatbot-input button {
-  background-color: #0D1B2A; /* Color marrón que coincide con la estética de barbería */
+  padding: 0 16px;
+  background-color: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 20px;
-  padding: 10px 15px;
-  margin-left: 10px;
+  border-radius: 24px;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s;
+  font-weight: 600;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
 }
 
 .chatbot-input button:hover {
-  background-color: #0D1B2A; /* Marrón más claro al pasar el mouse */
+  background-color: var(--accent-color);
+  transform: translateY(-1px);
 }
 
-/* Animaciones */
-.chatbot-widget.open .chatbot-toggle {
-  transform: rotate(180deg);
+/* Scrollbar personalizada */
+.chatbot-messages::-webkit-scrollbar {
+  width: 6px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+.chatbot-messages::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
 }
 
-.chatbot-container {
-  animation: fadeIn 0.3s ease-out;
+.chatbot-messages::-webkit-scrollbar-thumb {
+  background: var(--secondary-color);
+  border-radius: 3px;
 }
 
-/* Estilos responsivos */
-@media (max-width: 480px) {
-  .chatbot-container {
-    width: 300px;
-    height: 450px;
-    bottom: 70px;
+/* Efecto de typing para el bot */
+.message.bot::after {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: var(--secondary-color);
+  border-radius: 50%;
+  margin-left: 6px;
+  opacity: 0;
+  animation: typing 1.5s infinite;
+}
+
+.message.bot::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: var(--secondary-color);
+  border-radius: 50%;
+  margin-right: 4px;
+  opacity: 0;
+  animation: typing 1.5s infinite 0.2s;
+}
+
+.message.bot span::after {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: var(--secondary-color);
+  border-radius: 50%;
+  margin-left: 4px;
+  opacity: 0;
+  animation: typing 1.5s infinite 0.4s;
+}
+
+@keyframes typing {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateY(0);
   }
-  
-  .chatbot-toggle {
-    width: 50px;
-    height: 50px;
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
   }
-}
-
-/* Estilos para mensajes con botones de opciones */
-.message-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 8px;
-}
-
-.option-button {
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 15px;
-  padding: 5px 10px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.option-button:hover {
-  background-color: #e0e0e0;
 }

@@ -30,7 +30,7 @@ const NavBar = () => {
         <a href="/#servicios" className="nav">Servicios</a>
         {/* <a href="/#siguenos" className="nav siguenos-home">Síguenos</a> */}
         <Link to="/pages/contacto" className="nav">Contacto</Link>
-        <Link to="/pages/agendar" className="agendarCita">Agendar Cita</Link>
+        {/* <Link to="/pages/agendar" className="agendarCita">Agendar Cita</Link> */}
       </div>
       
       {/* Menú de Navegación - Versión Móvil */}
