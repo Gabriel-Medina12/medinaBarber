@@ -52,9 +52,9 @@ const NavBar = () => {
             Contacto
             <hr className="menu-divider" />
           </Link>
-          <Link to="/pages/agendar" className="agendarCita mobile-agendar" onClick={() => setIsOpen(false)}>
+          {/* <Link to="/pages/agendar" className="agendarCita mobile-agendar" onClick={() => setIsOpen(false)}>
             Agendar Cita
-          </Link>
+          </Link> */}
         </div>
       </div>
     </nav>
