@@ -3,6 +3,7 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import '../ChatbotWidget.css';
 import barberGif from '../assets/img/barber-spin.gif';
+import ReactMarkdown from 'react-markdown';
 
 console.log("📦 ChatbotWidget cargado");
 
@@ -66,7 +67,7 @@ function ChatbotWidget({ autoOpen = true, autoOpenDelay = 3000 }) {
     'promociones': { numbers: ['6', 'promociones', 'ofertas'], response: '¡Claro! Mantente atento a nuestras redes sociales para las últimas promociones. Actualmente, si agendas tu primer combo, tienes un 10% de descuento.' },
   };
 
-  const faqMenu = `¡Claro! Con gusto te ayudo con tu consulta. ¿Sobre qué te gustaría saber? Por favor, dime el **número** o la **palabra clave** de tu interés:
+  const faqMenu = `¡Claro! Con gusto te ayudo con tu consulta. \n¿Sobre qué te gustaría saber? \nPor favor, dime el **número** o la **palabra clave** de tu interés:
     1.  **Servicios**
     2.  **Precios**
     3.  **Horarios**
@@ -74,14 +75,14 @@ function ChatbotWidget({ autoOpen = true, autoOpenDelay = 3000 }) {
     5.  **Contacto**
     6.  **Promociones**`;
 
-  const notUnderstoodMessage = `Disculpa, no entendí. Por favor, **elige un tema del menú** (por ejemplo, '1' o 'Servicios'). Si lo prefieres, puedes **comunicarte al 0426-117-88-59** o escribirnos a **medinabarber1@gmail.com**.`;
+  const notUnderstoodMessage = `Disculpa, no entendí. \nPor favor, **elige un tema del menú** (por ejemplo, '1' o 'Servicios'). Si lo prefieres, puedes **comunicarte al 0426-117-88-59** o escribirnos a **medinabarber1@gmail.com**.`;
 
   const steps = [
-    { key: 'welcome', question: '¡Hola! Bienvenido a Medina Barber 💈. ¿En qué podemos ayudarte hoy? ¿Deseas agendar una cita o tienes alguna consulta?' },
-    { key: 'name', question: '¡Excelente! Para empezar, ¿podrías decirme tu nombre, por favor? Así sé cómo dirigirme a ti. 😊' },
-    { key: 'email', question: '¡Un gusto! Ahora, ¿cuál es tu correo electrónico? Así podemos enviarte la confirmación de tu cita. 📧' },
-    { key: 'phone', question: 'Perfecto. Y para estar conectados, ¿cuál es tu número de teléfono? 📞' },
-    { key: 'service', question: '¿Qué servicio te gustaría agendar hoy? ¿Un corte de cabello, arreglo de barba o el combo completo de corte y barba? ¡Tú eliges! 😉' },
+    {  key: 'welcome', question: '¡Hola! 👋\n Bienvenido a Medina Barber 💈 ¿Cómo te va? ¿Deseas agendar una cita o tienes una consulta??' },
+    { key: 'name', question: '¡Excelente! Para empezar, \n¿podrías escribir tu nombre, por favor?\n Así sé cómo dirigirme a ti. 😊' },
+    { key: 'email', question: '¡Un gusto! Ahora, \n¿cuál es tu correo electrónico? \nAsí podemos enviarte la confirmación de tu cita. 📧' },
+    { key: 'phone', question: 'Perfecto. \nY para estar conectados, \n¿cuál es tu número de teléfono? 📞' },
+    { key: 'service', question: '¿Qué servicio te gustaría agendar hoy? \n¿Un corte de cabello, arreglo de barba o el combo completo de corte y barba? \n¡Tú eliges! 😉' },
     { key: 'date', question: '¡Entendido! Por favor, selecciona la fecha de tu preferencia en el calendario:' },
     { key: 'time', question: '¿A qué hora te gustaría agendar?' }
   ];
@@ -259,7 +260,7 @@ function ChatbotWidget({ autoOpen = true, autoOpenDelay = 3000 }) {
       let botResponse = '';
 
       if (availableTimes.length > 0) {
-        botResponse = `¡Excelente! Para el ${friendlyDate}, tenemos disponibilidad en los siguientes horarios: ${availableTimes.join(', ')}. ¿Cuál te gustaría reservar?`;
+        botResponse = `¡Excelente! Para el ${friendlyDate}, \ntenemos disponibilidad en los siguientes horarios: ${availableTimes.join(', ')}. \n¿Cuál te gustaría reservar?`;
         addMessage('bot', botResponse);
         setFormStep(formStep + 1);
         setShowCalendar(false);
@@ -298,7 +299,7 @@ function ChatbotWidget({ autoOpen = true, autoOpenDelay = 3000 }) {
               {messages.map((msg, index) => {
                 return (
                   <div key={index} className={`message ${msg.sender}`}>
-                    {msg.text}
+                    <ReactMarkdown>{msg.text}</ReactMarkdown>
                   </div>
                 );
               })}
