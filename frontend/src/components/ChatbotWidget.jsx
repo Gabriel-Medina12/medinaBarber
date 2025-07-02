@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import '../ChatbotWidget.css'; // Asegúrate de que este archivo CSS exista
-import barberGif from '../assets/img/barber-spin.gif'; // Asegúrate de que esta ruta sea correcta
-
-// Importar el componente de calendario y sus estilos
 import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css'; // Estilos básicos del calendario
+import 'react-calendar/dist/Calendar.css';
+import '../ChatbotWidget.css';
+import barberGif from '../assets/img/barber-spin.gif';
 
 console.log("📦 ChatbotWidget cargado");
 
@@ -14,13 +12,13 @@ const sendEmailNotification = (data) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   })
-    .then(res => console.log('✅ Webhook enviado a Make'))
+    .then(res => console.log('✅ Webhook enviado a Make:', res))
     .catch(err => console.error('❌ Error al enviar a Make:', err));
 };
 
 function ChatbotWidget({ autoOpen = true, autoOpenDelay = 3000 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [formStep, setFormStep] = useState(0); // Paso inicial para la bienvenida y elección (agendar/consulta)
+  const [formStep, setFormStep] = useState(0);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -32,97 +30,79 @@ function ChatbotWidget({ autoOpen = true, autoOpenDelay = 3000 }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
-  const [showCalendar, setShowCalendar] = useState(false); // Nuevo estado para controlar la visibilidad del calendario
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [isConsulting, setIsConsulting] = useState(false);
+  const [hasWelcomeMessageBeenShown, setHasWelcomeMessageBeenShown] = useState(false);
 
-  // --- NUEVAS FUNCIONES DE UTILIDAD ---
-
-  // Horario de atención y simulación de citas ocupadas
+  // --- Datos y funciones de utilidad ---
   const weeklySchedule = {
-      'lunes': ['08:00', '09:00', '10:00', '11:00'],
-      'martes': ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
-      'miércoles': ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
-      'jueves': ['08:00', '09:00', '10:00', '11:00'],
-      'viernes': ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
-      'sábado': ['11:00', '12:00', '13:00', '14:00', '15:00', '16:00'],
+    'lunes': ['08:00', '09:00', '10:00', '11:00'],
+    'martes': ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
+    'miercoles': ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
+    'jueves': ['08:00', '09:00', '10:00', '11:00'],
+    'viernes': ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
+    'sabado': ['11:00', '12:00', '13:00', '14:00', '15:00', '16:00'],
   };
 
-  // Simulación de turnos ocupados (ejemplo, en un sistema real vendría de una base de datos)
   const bookedAppointments = {
-      '2025-06-25': ['10:00', '11:00', '15:00'], // Miércoles 25 de junio de 2025
-      '2025-06-26': ['10:00', '16:00'],   // Jueves 26 de junio de 2025
-      '2025-06-28': ['11:00', '13:00'],   // Sábado 28 de junio de 2025
-      '2025-07-05': ['12:00'], // Ejemplo para el 5 de julio
+    '2025-06-25': ['10:00', '11:00', '15:00'],
+    '2025-06-26': ['10:00', '16:00'],
+    '2025-06-28': ['11:00', '13:00'],
+    '2025-07-05': ['12:00'],
   };
 
-  // Objeto con respuestas predefinidas para FAQs
-  const faqResponses = {
-      'servicios': 'Ofrecemos corte de cabello, arreglo de barba y el combo completo. Nuestros barberos son expertos en los últimos estilos. ¿Te gustaría saber más de alguno en específico?',
-      'precios': 'Nuestros precios son los siguientes: Corte de cabello: $10, Arreglo de barba: $8, Combo (corte + barba): $16. ¡Tenemos promociones especiales de vez en cuando!',
-      'ubicacion': 'Estamos ubicados en la [Tu Dirección Exacta aquí, por ejemplo: Av. Principal, Centro Comercial El Sol, Local 5], ¡justo al lado de [Referencia, por ejemplo: la panadería La Esquina]! Te esperamos.',
-      'contacto': 'Puedes contactarnos directamente al teléfono 0426-117-88-59 o por WhatsApp al mismo número. ¡Estamos a la orden!',
-      'peluquero': 'Contamos con un equipo de barberos expertos. Todos son increíbles, ¡puedes confiar en cualquiera de ellos para un excelente servicio!',
-      'promociones': '¡Claro! Mantente atento a nuestras redes sociales para las últimas promociones. Actualmente, si agendas tu primer combo, tienes un 10% de descuento.',
-      'cancelar': 'Para cancelar o modificar tu cita, por favor, avísanos con al menos 24 horas de anticipación. Así podemos organizar la agenda y ofrecerle el espacio a otro cliente. Puedes llamarnos o escribirnos por WhatsApp.',
-      // Agrega más preguntas y respuestas según necesites
+  const faqOptions = {
+    'servicios': { numbers: ['1', 'servicios', 'servicio'], response: 'Ofrecemos corte de cabello, arreglo de barba y el combo completo. Nuestros barberos son expertos en los últimos estilos. ¿Te gustaría saber más de alguno en específico?' },
+    'precios': { numbers: ['2', 'precios', 'precio'], response: 'Nuestros precios son los siguientes: Corte de cabello: $10, Arreglo de barba: $8, Combo (corte + barba): $16. ¡Tenemos promociones especiales de vez en cuando!' },
+    'horarios': { numbers: ['3', 'horarios', 'horario'], response: `Nuestro horario de atención es:
+              \n• Lunes: 8:00 a.m. - 12:00 p.m.
+              \n• Martes: 10:00 a.m. - 6:00 p.m.
+              \n• Miércoles: 10:00 a.m. - 6:00 p.m.
+              \n• Jueves: 8:00 a.m. - 12:00 p.m.
+              \n• Viernes: 10:00 a.m. - 6:00 p.m.
+              \n• Sábado: 11:00 a.m. - 5:00 p.m.` },
+    'ubicacion': { numbers: ['4', 'ubicacion', 'dirección'], response: 'Estamos ubicados en la [Tu Dirección Exacta aquí, por ejemplo: Av. Principal, Centro Comercial El Sol, Local 5], ¡justo al lado de [Referencia, por ejemplo: la panadería La Esquina]! Te esperamos.' },
+    'contacto': { numbers: ['5', 'contacto', 'llamar', 'numero'], response: 'Puedes contactarnos directamente al teléfono 0426-117-88-59 o por WhatsApp al mismo número. ¡Estamos a la orden!' },
+    'promociones': { numbers: ['6', 'promociones', 'ofertas'], response: '¡Claro! Mantente atento a nuestras redes sociales para las últimas promociones. Actualmente, si agendas tu primer combo, tienes un 10% de descuento.' },
   };
 
+  const faqMenu = `¡Claro! Con gusto te ayudo con tu consulta. ¿Sobre qué te gustaría saber? Por favor, dime el **número** o la **palabra clave** de tu interés:
+    1.  **Servicios**
+    2.  **Precios**
+    3.  **Horarios**
+    4.  **Ubicación**
+    5.  **Contacto**
+    6.  **Promociones**`;
 
-  const formatFriendlyDate = (dateString) => {
-      // Importante: Añadir 'T00:00:00' para que JavaScript interprete la fecha en UTC y evite desfases horarios
-      // que podrían cambiar el día en algunas zonas.
-      const date = new Date(dateString + 'T00:00:00');
-      const options = { weekday: 'long', day: 'numeric', month: 'long' };
-      return date.toLocaleDateString('es-VE', options);
-  };
-
-  const suggestAvailableTimes = (dateString) => {
-      // Importante: Añadir 'T00:00:00' para que JavaScript interprete la fecha en UTC y evite desfases horarios
-      const date = new Date(dateString + 'T00:00:00');
-      const dayOfWeek = date.toLocaleDateString('es-VE', { weekday: 'long' });
-      // Normalizar el nombre del día para que coincida con las claves de weeklySchedule (ej: "miércoles" a "miercoles")
-      const fullDayName = dayOfWeek.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
-      const dailySlots = weeklySchedule[fullDayName] || [];
-      const bookedSlots = bookedAppointments[dateString] || [];
-
-      const availableSlots = dailySlots.filter(slot => !bookedSlots.includes(slot));
-      
-      // Formatea los horarios para AM/PM y asegura que horas como '00' se muestren como '12' AM
-      return availableSlots.map(slot => {
-          const [hour, minute] = slot.split(':');
-          let formattedHour = parseInt(hour);
-          const ampm = formattedHour >= 12 ? 'p.m.' : 'a.m.';
-          formattedHour = formattedHour > 12 ? formattedHour - 12 : formattedHour;
-          formattedHour = formattedHour === 0 ? 12 : formattedHour; // 00:00 es 12 a.m.
-          return `${formattedHour}:${minute} ${ampm}`;
-      });
-  };
+  const notUnderstoodMessage = `Disculpa, no entendí. Por favor, **elige un tema del menú** (por ejemplo, '1' o 'Servicios'). Si lo prefieres, puedes **comunicarte al 0426-117-88-59** o escribirnos a **medinabarber1@gmail.com**.`;
 
   const steps = [
     { key: 'welcome', question: '¡Hola! Bienvenido a Medina Barber 💈. ¿En qué podemos ayudarte hoy? ¿Deseas agendar una cita o tienes alguna consulta?' },
     { key: 'name', question: '¡Excelente! Para empezar, ¿podrías decirme tu nombre, por favor? Así sé cómo dirigirme a ti. 😊' },
     { key: 'email', question: '¡Un gusto! Ahora, ¿cuál es tu correo electrónico? Así podemos enviarte la confirmación de tu cita. 📧' },
     { key: 'phone', question: 'Perfecto. Y para estar conectados, ¿cuál es tu número de teléfono? 📞' },
-    { key: 'service', question: '¿Qué servicio te gustaría agendar hoy? ¿Un corte de cabello, arreglar la barba o el combo completo de corte y barba? ¡Tú eliges! 😉' },
-    { key: 'date', question: '¡Entendido! Por favor, selecciona la fecha de tu preferencia en el calendario:' }, // La pregunta de la fecha ahora solo introduce el calendario
-    { key: 'time', question: '¿A qué hora te gustaría agendar?' } // Esta pregunta se lanzará después de seleccionar la fecha
+    { key: 'service', question: '¿Qué servicio te gustaría agendar hoy? ¿Un corte de cabello, arreglo de barba o el combo completo de corte y barba? ¡Tú eliges! 😉' },
+    { key: 'date', question: '¡Entendido! Por favor, selecciona la fecha de tu preferencia en el calendario:' },
+    { key: 'time', question: '¿A qué hora te gustaría agendar?' }
   ];
 
+  // Efecto para la apertura automática y para mostrar el mensaje de bienvenida UNA VEZ
   useEffect(() => {
     const chatbotClosed = localStorage.getItem('chatbotClosed');
-    if (autoOpen && !chatbotClosed) {
+    
+    // Solo mostrar mensaje si está abierto (automáticamente o manualmente) y no se ha mostrado antes
+    if (isOpen && !hasWelcomeMessageBeenShown) {
+      addMessage('bot', steps[0].question);
+      setHasWelcomeMessageBeenShown(true);
+    }
+    
+    // Lógica de apertura automática independiente
+    if (autoOpen && !chatbotClosed && !isOpen) {
       setTimeout(() => {
         setIsOpen(true);
-        if (messages.length === 0) { // Evita duplicar el mensaje si ya se cargó
-            addMessage('bot', steps[0].question); // Saludo inicial
-        }
       }, autoOpenDelay);
-    } else if (!chatbotClosed && isOpen) {
-        if (messages.length === 0) {
-            addMessage('bot', steps[0].question);
-        }
     }
-  }, []);
+  }, [isOpen, autoOpen, autoOpenDelay, hasWelcomeMessageBeenShown]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -132,106 +112,121 @@ function ChatbotWidget({ autoOpen = true, autoOpenDelay = 3000 }) {
     setMessages(prev => [...prev, { sender, text }]);
   };
 
+  const formatFriendlyDate = (dateString) => {
+    const date = new Date(dateString + 'T00:00:00');
+    const options = { weekday: 'long', day: 'numeric', month: 'long' };
+    return date.toLocaleDateString('es-VE', options);
+  };
+
+  const suggestAvailableTimes = (dateString) => {
+    const date = new Date(dateString + 'T00:00:00');
+    const dayOfWeek = date.toLocaleDateString('es-VE', { weekday: 'long' });
+    const fullDayName = dayOfWeek.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+    const dailySlots = weeklySchedule[fullDayName] || [];
+    const bookedSlots = bookedAppointments[dateString] || [];
+
+    const availableSlots = dailySlots.filter(slot => !bookedSlots.includes(slot));
+    
+    return availableSlots.map(slot => {
+      const [hour, minute] = slot.split(':');
+      let formattedHour = parseInt(hour);
+      const ampm = formattedHour >= 12 ? 'p.m.' : 'a.m.';
+      formattedHour = formattedHour > 12 ? formattedHour - 12 : formattedHour;
+      formattedHour = formattedHour === 0 ? 12 : formattedHour;
+      return `${formattedHour}:${minute} ${ampm}`;
+    });
+  };
+
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (input.trim() === '') return; // No enviar mensajes vacíos
+    if (input.trim() === '') return;
     const userMessage = input.trim();
     addMessage('user', userMessage);
     setInput('');
 
-    // Lógica para el primer paso (elegir entre agendar cita o consulta)
-    if (formStep === 0) {
-        if (userMessage.toLowerCase().includes('cita') || userMessage.toLowerCase().includes('agendar')) {
-            setTimeout(() => {
-                addMessage('bot', steps[1].question); // Pasa a preguntar el nombre
-                setFormStep(1);
-                setShowCalendar(false); // Asegura que el calendario esté oculto para esta rama
-            }, 600);
-        } else if (userMessage.toLowerCase().includes('consulta') || userMessage.toLowerCase().includes('pregunta') || userMessage.toLowerCase().includes('horario') || userMessage.toLowerCase().includes('otra consulta')) {
-            setTimeout(() => {
-                let botResponse = `¡Claro! Con gusto te ayudo con tu consulta. Nuestro horario de atención es:
-                \n• Lunes: 8:00 a.m. - 12:00 p.m.
-                \n• Martes: 10:00 a.m. - 6:00 p.m.
-                \n• Miércoles: 10:00 a.m. - 6:00 p.m.
-                \n• Jueves: 8:00 a.m. - 12:00 p.m.
-                \n• Viernes: 10:00 a.m. - 6:00 p.m.
-                \n• Sábado: 11:00 a.m. - 5:00 p.m.
-                \n\n`; // Incluye el horario por defecto
+    if (formStep === 0 && !isConsulting) {
+      if (userMessage.toLowerCase().includes('cita') || userMessage.toLowerCase().includes('agendar')) {
+        setTimeout(() => {
+          addMessage('bot', steps[1].question);
+          setFormStep(1);
+          setShowCalendar(false);
+          setIsConsulting(false);
+        }, 600);
+      } else if (userMessage.toLowerCase().includes('consulta') || userMessage.toLowerCase().includes('pregunta')) {
+        setTimeout(() => {
+          addMessage('bot', faqMenu);
+          setIsConsulting(true);
+          setFormStep(0);
+          setShowCalendar(false);
+        }, 600);
+      } else {
+        setTimeout(() => {
+          addMessage('bot', `Disculpa, no entendí tu respuesta. ¿Deseas agendar una cita o tienes alguna consulta?`);
+          setShowCalendar(false);
+          setIsConsulting(false);
+        }, 600);
+      }
+      return;
+    }
 
-                let foundFaq = false;
-                const lowerCaseMessage = userMessage.toLowerCase();
-
-                // Intenta encontrar una respuesta en las FAQs
-                for (const key in faqResponses) {
-                    if (lowerCaseMessage.includes(key)) {
-                        botResponse += faqResponses[key] + "\n\n"; // Añade la respuesta de la FAQ
-                        foundFaq = true;
-                        break; // Solo responde a la primera FAQ encontrada
-                    }
-                }
-
-                if (!foundFaq && !lowerCaseMessage.includes('horario')) {
-                    // Si no encontró FAQ específica y no preguntó solo por horario
-                    botResponse += `Disculpa, no pude encontrar una respuesta específica para eso. ¿Sobre qué te gustaría consultar? Por ejemplo, puedo darte información sobre nuestros **servicios**, **precios**, **ubicación**, **contacto** o **promociones**. En caso de tener una consulta diferente, te invito a contactarnos a través de nuestro número 0426-117-88-59 o nuestro correo medinabarber1@gmail.com. ¿Te parece una opción?`;
-                } else if (foundFaq && !lowerCaseMessage.includes('horario')) {
-                    // Si encontró FAQ pero no se preguntó por horario, solo añadir el complemento
-                    botResponse += '¿Hay algo más en lo que pueda ayudarte con esto, o te gustaría agendar una cita?';
-                } else if (lowerCaseMessage.includes('horario') && !foundFaq) {
-                    // Si solo preguntó por horario y no encontró otra FAQ
-                    botResponse += '¿Te gustaría agendar una cita ahora o tienes alguna otra consulta?';
-                }
-                
-                addMessage('bot', botResponse);
-                setShowCalendar(false); // Asegura que el calendario esté oculto para esta rama
-                // Permanece en el paso 0 para re-evaluar la intención del usuario
-            }, 600);
-        } else {
-             setTimeout(() => {
-                addMessage('bot', `Disculpa, no entendí tu respuesta. ¿Deseas agendar una cita o tienes alguna consulta?`);
-                setShowCalendar(false); // Asegura que el calendario esté oculto
-            }, 600);
+    if (isConsulting) {
+      const lowerCaseMessage = userMessage.toLowerCase();
+      let foundResponse = false;
+      
+      for (const key in faqOptions) {
+        if (faqOptions[key].numbers.includes(lowerCaseMessage) || faqOptions[key].numbers.some(numKey => lowerCaseMessage.includes(numKey))) {
+          setTimeout(() => {
+            addMessage('bot', faqOptions[key].response + '\n\n¿Hay algo más en lo que pueda ayudarte con esto, o te gustaría agendar una cita?');
+            setIsConsulting(false);
+            setFormStep(0);
+          }, 600);
+          foundResponse = true;
+          break;
         }
-        return; // Detiene la ejecución para que no avance a los pasos de agendamiento
+      }
+
+      if (!foundResponse) {
+        setTimeout(() => {
+          addMessage('bot', notUnderstoodMessage);
+        }, 600);
+      }
+      return;
     }
 
     const currentKey = steps[formStep].key;
     const updatedData = { ...formData, [currentKey]: userMessage };
     setFormData(updatedData);
 
-    // Lógica para los pasos intermedios (nombre, email, teléfono, servicio)
-    // Se excluye 'date' y 'time' de la progresión automática vía input, ya que 'date' usa calendario
-    // y 'time' es el paso final de input antes de la confirmación.
     if (formStep < steps.length - 1 && currentKey !== 'date' && currentKey !== 'time') {
-        setTimeout(() => {
-            addMessage('bot', steps[formStep + 1].question);
-            setFormStep(formStep + 1);
-            // Si el siguiente paso es la fecha, mostrar el calendario
-            if (steps[formStep + 1].key === 'date') {
-                setShowCalendar(true);
-            } else {
-                setShowCalendar(false); // Asegura que el calendario se oculte si no es el paso de fecha
-            }
-        }, 600);
+      setTimeout(() => {
+        addMessage('bot', steps[formStep + 1].question);
+        setFormStep(formStep + 1);
+        if (steps[formStep + 1].key === 'date') {
+          setShowCalendar(true);
+        } else {
+          setShowCalendar(false);
+        }
+      }, 600);
     } else if (currentKey === 'time') {
-        // Este es el último paso del formulario, procesar la cita
+      setTimeout(() => {
+        addMessage('bot', `¡Genial, ${updatedData.name}! Tu cita para ${updatedData.service} ha sido agendada para el ${formatFriendlyDate(updatedData.date)} a las ${updatedData.time}. ¡Te esperamos!`);
+        
         setTimeout(() => {
-            addMessage('bot', `¡Genial, ${updatedData.name}! Tu cita para ${updatedData.service} ha sido agendada para el ${formatFriendlyDate(updatedData.date)} a las ${updatedData.time}. ¡Te esperamos!`);
-            
-            // Mensaje de política de cancelación
-            setTimeout(() => {
-                addMessage('bot', `Queremos recordarte que, si necesitas cancelar o modificar tu cita, por favor, avísanos con al menos 24 horas de anticipación. ¡Así podemos organizar la agenda y ofrecerle el espacio a otro cliente! 😉`);
-            }, 1000); // Pequeño retraso para que el mensaje anterior se asimile
+          addMessage('bot', `Queremos recordarte que, si necesitas cancelar o modificar tu cita, por favor, avísanos con al menos 24 horas de anticipación. ¡Así podemos organizar la agenda y ofrecerle el espacio a otro cliente! 😉`);
+        }, 1000);
 
-            console.log('📤 Enviando al webhook:', updatedData);
-            sendEmailNotification(updatedData);
+        console.log('📤 Enviando al webhook:', updatedData);
+        sendEmailNotification(updatedData);
 
-            // Reiniciar el chatbot después de un momento
-            setTimeout(() => {
-                addMessage('bot', '¡Tu solicitud ha sido enviada con éxito! Pronto nos comunicaremos contigo para confirmar los detalles. ¡Gracias por elegir Medina Barber! 💈 ¿Hay algo más en lo que pueda ayudarte hoy?');
-                setFormStep(0); // Vuelve al paso inicial (bienvenida/consulta/agendar)
-                setFormData({ name: '', email: '', phone: '', service: '', date: '', time: '' });
-            }, 2000); // Retraso para el mensaje final
-        }, 600);
+        setTimeout(() => {
+          addMessage('bot', '¡Tu solicitud ha sido enviada con éxito! Pronto nos comunicaremos contigo para confirmar los detalles. ¡Gracias por elegir Medina Barber! 💈 ¿Hay algo más en lo que pueda ayudarte hoy?');
+          setFormStep(0);
+          setFormData({ name: '', email: '', phone: '', service: '', date: '', time: '' });
+          setIsConsulting(false);
+          setHasWelcomeMessageBeenShown(false);
+        }, 2000);
+      }, 600);
     }
   };
 
@@ -241,43 +236,40 @@ function ChatbotWidget({ autoOpen = true, autoOpenDelay = 3000 }) {
     if (!newState) {
       localStorage.setItem('chatbotClosed', 'true');
     } else {
-      localStorage.removeItem('chatbotClosed'); // Eliminar al abrir manualmente
-      if (messages.length === 0) { // Si no hay mensajes, iniciar la conversación
-        addMessage('bot', steps[0].question);
-      }
+      localStorage.removeItem('chatbotClosed');
     }
   };
 
-  // Función para manejar la selección de fecha desde el calendario
   const handleDateSelect = (date) => {
-      // date.toISOString().slice(0, 10) obtiene 'AAAA-MM-DD'
-      const selectedDateISO = date.toISOString().slice(0, 10);
-      const friendlyDate = formatFriendlyDate(selectedDateISO);
+    const selectedDateISO = date.toISOString().slice(0, 10);
+    const friendlyDate = formatFriendlyDate(selectedDateISO);
+    const dayOfWeekNumber = date.getDay();
 
-      addMessage('user', friendlyDate); // Muestra la fecha seleccionada por el usuario
-      setFormData({ ...formData, date: selectedDateISO });
-      
-      // Simular la búsqueda de horarios disponibles
-      setTimeout(() => {
-          const availableTimes = suggestAvailableTimes(selectedDateISO);
-          let botResponse = '';
+    addMessage('user', friendlyDate);
+    setFormData({ ...formData, date: selectedDateISO });
+    
+    setTimeout(() => {
+      if (dayOfWeekNumber === 0) {
+        addMessage('bot', `Disculpa, no abrimos los domingos. Por favor, selecciona otro día de la semana para agendar tu cita.`);
+        setShowCalendar(true);
+        return;
+      }
 
-          if (availableTimes.length > 0) {
-              botResponse = `¡Excelente! Para el ${friendlyDate}, tenemos disponibilidad en los siguientes horarios: ${availableTimes.join(', ')}. ¿Cuál te gustaría reservar?`;
-              addMessage('bot', botResponse);
-              setFormStep(formStep + 1); // Avanza al paso de la hora
-              setShowCalendar(false); // Oculta el calendario definitivamente si hay tiempos disponibles
-          } else {
-              // Si no hay disponibilidad, se mantiene en el mismo formStep (fecha)
-              // y se vuelve a mostrar el calendario para que elija otra fecha.
-              botResponse = `Lo siento, para el ${friendlyDate} ya estamos full. ¿Te gustaría agendar para otra fecha? Por favor, selecciona otra fecha en el calendario.`;
-              addMessage('bot', botResponse);
-              setShowCalendar(true); // Vuelve a mostrar el calendario para que elija otra fecha
-              // No se cambia el formStep, se queda en el paso de la fecha hasta que elija una disponible
-          }
-      }, 600);
+      const availableTimes = suggestAvailableTimes(selectedDateISO);
+      let botResponse = '';
+
+      if (availableTimes.length > 0) {
+        botResponse = `¡Excelente! Para el ${friendlyDate}, tenemos disponibilidad en los siguientes horarios: ${availableTimes.join(', ')}. ¿Cuál te gustaría reservar?`;
+        addMessage('bot', botResponse);
+        setFormStep(formStep + 1);
+        setShowCalendar(false);
+      } else {
+        botResponse = `Lo siento, para el ${friendlyDate} ya estamos full. ¿Te gustaría agendar para otra fecha? Por favor, selecciona otra fecha en el calendario.`;
+        addMessage('bot', botResponse);
+        setShowCalendar(true);
+      }
+    }, 600);
   };
-
 
   return (
     <>
@@ -314,14 +306,13 @@ function ChatbotWidget({ autoOpen = true, autoOpenDelay = 3000 }) {
             </div>
 
             <form onSubmit={handleSendMessage} className="chatbot-input">
-              {/* Renderiza el calendario si estamos en el paso de la fecha (formStep 5) y showCalendar es true */}
               {formStep === 5 && showCalendar ? (
                 <div className="calendar-wrapper">
                     <Calendar
                         onChange={handleDateSelect}
-                        value={new Date()} // Inicia el calendario en la fecha actual
-                        minDate={new Date()} // No permite seleccionar fechas pasadas
-                        locale="es-ES" // Asegura el idioma español
+                        value={new Date()}
+                        minDate={new Date()}
+                        locale="es-ES"
                     />
                 </div>
               ) : (
@@ -329,12 +320,12 @@ function ChatbotWidget({ autoOpen = true, autoOpenDelay = 3000 }) {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Escribe tu respuesta..."
-                  // Deshabilitar input si el calendario está visible y estamos en el paso de la fecha
                   disabled={formStep === 5 && showCalendar}
                 />
               )}
-              {/* El botón "Enviar" también se deshabilita si el calendario está abierto y esperando una selección */}
-              <button type="submit" disabled={formStep === 5 && showCalendar}>Enviar</button>
+              <button type="submit" disabled={formStep === 5 && showCalendar} className="send-button">
+                Enviar
+              </button>
             </form>
           </div>
         </div>
