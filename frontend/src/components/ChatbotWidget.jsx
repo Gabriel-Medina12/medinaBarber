@@ -78,7 +78,7 @@ function ChatbotWidget({ autoOpen = true, autoOpenDelay = 3000 }) {
   const notUnderstoodMessage = `Disculpa, no entendí. \nPor favor, **elige un tema del menú** (por ejemplo, '1' o 'Servicios'). Si lo prefieres, puedes **comunicarte al 0426-117-88-59** o escribirnos a **medinabarber1@gmail.com**.`;
 
   const steps = [
-    {  key: 'welcome', question: '¡Hola! 👋\n Bienvenido a Medina Barber 💈 ¿Cómo te va? ¿Deseas agendar una cita o tienes una consulta??' },
+    {  key: 'welcome', question: '¡Hola! 👋\n Bienvenido a Medina Barber 💈 ¿Cómo te va? ¿Deseas agendar una cita o tienes una consulta?' },
     { key: 'name', question: '¡Excelente! Para empezar, \n¿podrías escribir tu nombre, por favor?\n Así sé cómo dirigirme a ti. 😊' },
     { key: 'email', question: '¡Un gusto! Ahora, \n¿cuál es tu correo electrónico? \nAsí podemos enviarte la confirmación de tu cita. 📧' },
     { key: 'phone', question: 'Perfecto. \nY para estar conectados, \n¿cuál es tu número de teléfono? 📞' },
