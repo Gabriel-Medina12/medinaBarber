@@ -8,7 +8,7 @@ import ReactMarkdown from 'react-markdown';
 console.log("📦 ChatbotWidget cargado");
 
 const sendEmailNotification = (data) => {
-  fetch('https://hook.us2.make.com/vitopvucvw6efs96tkz8fh8e7ix5qrky', {
+  fetch('https://hook.us2.make.com/96eolgbrj5jgydphponitbe1hptm9q54', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
