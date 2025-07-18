@@ -38,7 +38,7 @@ function App() {
 
   useEffect(() => {
     const handleLoad = () => {
-      console.log("La página se ha cargado completamente.");
+      // console.log("La página se ha cargado completamente.");
       setIsLoading(false);
     };
 

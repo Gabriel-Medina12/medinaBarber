@@ -7,18 +7,50 @@ const sendMail = async (to, subject, text) => {
         to: to,
         subject: subject,
         html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">
-                    ${subject}
-                </h2>
-                <div style="line-height: 1.6; color: #34495e;">
-                    ${text.replace(/\n/g, '<br>')}
-                </div>
-                <div style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #ecf0f1; color: #7f8c8d;">
-                    <p>Equipo de Medina Barber</p>
-                    <p>📞 Contacto: +58 412-2911866</p>
-                </div>
-            </div>
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${subject}</title>
+            </head>
+            <body style="font-family: 'Arial', sans-serif; background-color: #f8f8f8; margin: 0; padding: 20px 0; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                <td align="center" style="padding: 20px;">
+                    <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+                    <tr>
+                        <td style="padding: 30px 40px; text-align: center;">
+                        <h1 style="color: #A0522D; font-size: 26px; margin: 0 0 20px 0; font-weight: bold; letter-spacing: 1px;">
+                            ${subject}
+                        </h1>
+                        
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5; border-radius: 6px; padding: 20px; text-align: left;">
+                            <tr>
+                            <td>
+                                <div style="line-height: 1.6; color: #34495e;">
+                                ${text.replace(/\n/g, '<br>')}
+                                </div>
+                            </td>
+                            </tr>
+                        </table>
+
+                        <div style="margin-top: 25px; color: #555555; font-size: 16px; line-height: 1.6;">
+                            <p style="color: #A0522D; font-size: 18px; margin: 30px 0 0 0; font-weight: bold;">
+                            ¡Gestión de Citas Medina Barber!
+                            </p>
+                            <p style="margin: 10px 0 0 0;">📞 Contacto: +58 412-2911866</p>
+                        </div>
+                        </td>
+                    </tr>
+                    </table>
+                </td>
+                </tr>
+            </table>
+
+            </body>
+            </html>
         `
     }
     
