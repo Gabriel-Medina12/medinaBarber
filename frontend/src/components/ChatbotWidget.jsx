@@ -5,11 +5,11 @@ import '../ChatbotWidget.css';
 import barberGif from '../assets/img/barber-spin.gif';
 import ReactMarkdown from 'react-markdown';
 
-console.log("📦 ChatbotWidget cargado");
+// console.log("📦 ChatbotWidget cargado");
 
 const sendEmailNotification = async (data) => {
   try {
-    console.log('📤 Enviando datos a Make:', data);
+    // console.log('📤 Enviando datos a Make:', data);
     
     const response = await fetch('https://hook.us2.make.com/96eolgbrj5jgydphponitbe1hptm9q54', {
       method: 'POST',
@@ -29,7 +29,7 @@ const sendEmailNotification = async (data) => {
     });
     
     if (response.ok) {
-      console.log('✅ Webhook enviado exitosamente a Make');
+      // console.log('✅ Webhook enviado exitosamente a Make');
     } else {
       console.error('❌ Error en la respuesta del webhook:', response.status, response.statusText);
     }
@@ -241,7 +241,7 @@ function ChatbotWidget({ autoOpen = true, autoOpenDelay = 3000 }) {
           addMessage('bot', `Queremos recordarte que, si necesitas cancelar o modificar tu cita, por favor, avísanos con al menos 24 horas de anticipación. ¡Así podemos organizar la agenda y ofrecerle el espacio a otro cliente! 😉`);
         }, 1000);
 
-        console.log('📤 Enviando al webhook:', updatedData);
+        // console.log('📤 Enviando al webhook:', updatedData);
               // Cerrar el chatbot automáticamente después de 3 segundos
               setTimeout(() => {
                 setIsOpen(false);
