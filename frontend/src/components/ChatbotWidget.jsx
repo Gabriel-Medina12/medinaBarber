@@ -7,15 +7,35 @@ import ReactMarkdown from 'react-markdown';
 
 console.log("📦 ChatbotWidget cargado");
 
-const sendEmailNotification = (data) => {
-  fetch('https://hook.us2.make.com/96eolgbrj5jgydphponitbe1hptm9q54',  // Reemplaza con tu URL de webhook de Make
-    {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
-    .then(res => console.log('✅ Webhook enviado a Make:', res))
-    .catch(err => console.error('❌ Error al enviar a Make:', err));
+const sendEmailNotification = async (data) => {
+  try {
+    console.log('📤 Enviando datos a Make:', data);
+    
+    const response = await fetch('https://hook.us2.make.com/96eolgbrj5jgydphponitbe1hptm9q54', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        service: data.service,
+        date: data.date,
+        time: data.time,
+        timestamp: new Date().toISOString()
+      })
+    });
+    
+    if (response.ok) {
+      console.log('✅ Webhook enviado exitosamente a Make');
+    } else {
+      console.error('❌ Error en la respuesta del webhook:', response.status, response.statusText);
+    }
+  } catch (error) {
+    console.error('❌ Error al enviar a Make:', error);
+  }
 };
 
 function ChatbotWidget({ autoOpen = true, autoOpenDelay = 3000 }) {
@@ -213,6 +233,9 @@ function ChatbotWidget({ autoOpen = true, autoOpenDelay = 3000 }) {
     } else if (currentKey === 'time') {
       setTimeout(() => {
         addMessage('bot', `¡Genial, ${updatedData.name}! Tu cita para ${updatedData.service} ha sido agendada para el ${formatFriendlyDate(updatedData.date)} a las ${updatedData.time}. ¡Te esperamos!`);
+        
+        // AQUÍ DEBES AGREGAR LA LLAMADA PARA ENVIAR LOS DATOS
+        sendEmailNotification(updatedData);
         
         setTimeout(() => {
           addMessage('bot', `Queremos recordarte que, si necesitas cancelar o modificar tu cita, por favor, avísanos con al menos 24 horas de anticipación. ¡Así podemos organizar la agenda y ofrecerle el espacio a otro cliente! 😉`);
