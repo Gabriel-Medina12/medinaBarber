@@ -219,15 +219,19 @@ function ChatbotWidget({ autoOpen = true, autoOpenDelay = 3000 }) {
         }, 1000);
 
         console.log('📤 Enviando al webhook:', updatedData);
-        sendEmailNotification(updatedData);
+              // Cerrar el chatbot automáticamente después de 3 segundos
+              setTimeout(() => {
+                setIsOpen(false);
+                localStorage.setItem('chatbotClosed', 'true');
+              }, 3000);
 
-        setTimeout(() => {
-          addMessage('bot', '¡Tu solicitud ha sido enviada con éxito! Pronto nos comunicaremos contigo para confirmar los detalles. ¡Gracias por elegir Medina Barber! 💈 ¿Hay algo más en lo que pueda ayudarte hoy?');
-          setFormStep(0);
-          setFormData({ name: '', email: '', phone: '', service: '', date: '', time: '' });
-          setIsConsulting(false);
-          setHasWelcomeMessageBeenShown(false);
-        }, 2000);
+            setTimeout(() => {
+              addMessage('bot', '¡Tu solicitud ha sido enviada con éxito! Pronto nos comunicaremos contigo para confirmar los detalles. ¡Gracias por elegir Medina Barber! 💈 ¿Hay algo más en lo que pueda ayudarte hoy?');
+              setFormStep(0);
+              setFormData({ name: '', email: '', phone: '', service: '', date: '', time: '' });
+              setIsConsulting(false);
+              // No reiniciar hasWelcomeMessageBeenShown para evitar el mensaje de bienvenida
+            }, 2000);
       }, 600);
     }
   };
